@@ -1,5 +1,6 @@
 /dist/
 /src/*.egg-info
 /.venv/
+/.tox/
 __pycache__
 .pytest_cache
