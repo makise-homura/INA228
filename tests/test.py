@@ -1,7 +1,7 @@
-import api
+from ina228 import INA228
 from datetime import datetime
 
-ina228 = api.INA228()
+ina228 = INA228()
 
 ina228.configure()
 

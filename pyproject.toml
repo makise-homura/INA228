@@ -1,0 +1,24 @@
+[project]
+name = "ina228"
+version = "0.0.1"
+authors = [
+  { name="Andrey Zaostrovnykh", email="megalloid@gmail.com" },
+  { name="Igor Molchanov", email="akemi_homura@kurisa.ch" },
+]
+description = "Driver for TI INA228 with SMBUS"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICENSE*"]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project.urls]
+Homepage = "https://github.com/makise-homura/INA228/"
+Issues = "https://github.com/makise-homura/INA228/issues/"
