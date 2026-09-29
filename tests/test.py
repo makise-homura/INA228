@@ -1,6 +1,6 @@
 def test_main():
     from ina228 import INA228
-    from datetime import datetime
+    from datetime import datetime, UTC
 
     from stub_regmap import stub_regmap
 
@@ -33,7 +33,7 @@ def test_main():
         if i < 1000:
 
             i = i +1
-            print(i, datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
+            print(i, datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
 
         else:
 
