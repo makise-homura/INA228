@@ -47,5 +47,5 @@ If you want to use pytest, install it into venv:
 And then run:
 
 ```
-.venv/bin/python -m pytest tests/test.py
+.venv/bin/python -m pytest
 ```

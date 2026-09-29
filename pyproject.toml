@@ -22,3 +22,7 @@ dependencies = {file = ["requirements.txt"]}
 [project.urls]
 Homepage = "https://github.com/makise-homura/INA228/"
 Issues = "https://github.com/makise-homura/INA228/issues/"
+
+[tool.pytest]
+minversion = "9.0"
+testpaths = ["tests/test.py"]
