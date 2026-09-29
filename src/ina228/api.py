@@ -12,6 +12,8 @@ import time
 
 from smbus2 import SMBus
 
+from .testing import mock_SMBus
+
 # INA228 Address
 INA228_PORT = 1
 INA228_ADDRESS = 0x45
@@ -196,11 +198,12 @@ class INA228:
     __INA228_MANUFACTURER_ID    = 0x3E
     __INA228_DEVICE_ID          = 0x3F
 
-    def __init__(self, busnum = INA228_PORT, address = INA228_ADDRESS, shunt_ohms = INA228_SHUNT_OHMS):
+    def __init__(self, busnum = INA228_PORT, address = INA228_ADDRESS, shunt_ohms = INA228_SHUNT_OHMS, stub_regmap = None):
 
         self._address = address
-        self._i2c = SMBus(busnum)
+        self._i2c = mock_SMBus(stub_regmap) if stub_regmap else SMBus(busnum)
         self._shunt_ohms = shunt_ohms
+        self._stub_regmap = stub_regmap
     
     def __convert2comp2float(self, twocompdata, nrofbit, factor):
 

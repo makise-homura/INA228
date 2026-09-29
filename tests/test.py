@@ -1,37 +1,43 @@
-from ina228 import INA228
-from datetime import datetime
+def test_main():
+    from ina228 import INA228
+    from datetime import datetime
 
-ina228 = INA228()
+    from stub_regmap import stub_regmap
 
-ina228.configure()
+    ina228 = INA228(stub_regmap=stub_regmap)
 
-i = 0
+    ina228.configure()
 
-print('Manufacturer ID (HEX): {}, (CHAR): {}'.format(*ina228.get_manufacturer_id()))
+    i = 0
 
-print('Device ID: {}, Revision: {}'.format(*ina228.get_deviceid()))
+    print('Manufacturer ID (HEX): {}, (CHAR): {}'.format(*ina228.get_manufacturer_id()))
 
-while True:    
+    print('Device ID: {}, Revision: {}'.format(*ina228.get_deviceid()))
 
-    print('VBUS voltage: ', ina228.get_vbus_voltage())
+    while True:
 
-    print('Current: ', ina228.get_current())
+        print('VBUS voltage: ', ina228.get_vbus_voltage())
 
-    print('Power: ', ina228.get_power())
+        print('Current: ', ina228.get_current())
 
-    print('Shunt voltage: ', ina228.get_shunt_voltage())
+        print('Power: ', ina228.get_power())
 
-    print('Die temp: ', ina228.get_temp())
+        print('Shunt voltage: ', ina228.get_shunt_voltage())
 
-    print('Energy: ', ina228.get_energy())
+        print('Die temp: ', ina228.get_temp())
 
-    print('Charge: ', ina228.get_charge())
+        print('Energy: ', ina228.get_energy())
 
-    if i < 1000:
+        print('Charge: ', ina228.get_charge())
 
-        i = i +1
-        print(i, datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
+        if i < 1000:
 
-    else:
+            i = i +1
+            print(i, datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
 
-        exit()
+        else:
+
+            break
+
+if __name__ =="__main__":
+    test_main()
