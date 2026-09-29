@@ -373,7 +373,7 @@ class INA228:
 
         vshunt = (self.__convert2comp2float(raw >> 4, 20, conversion_factor)) * 10                  # Find and fix *10
 
-        print('Shunt voltage: ', vshunt)
+        return vshunt
 
 
     def get_vbus_voltage(self):
@@ -384,11 +384,10 @@ class INA228:
 
         vbus = self.__convert2comp2float(raw >> 4, 20, conversion_factor)
 
-        print('VBUS voltage: ', vbus)
+        return vbus
 
 
-
-    def get_temp_voltage(self):
+    def get_temp(self):
 
         conversion_factor = 7.8125e-3
 
@@ -396,8 +395,7 @@ class INA228:
 
         temp = self.__convert2comp2float(raw, 16, conversion_factor)
 
-        print('Die temp: ', temp)
-
+        return temp
 
     
     def get_current(self):        
@@ -406,8 +404,7 @@ class INA228:
 
         current = self.__convert2comp2float(raw >> 4, 20, self.get_current_lsb())
 
-        print('Current: ', current)
-
+        return current
 
 
     def get_power(self):
@@ -418,8 +415,7 @@ class INA228:
 
         power = (3.2 * raw * current_lsb)       
 
-        print('Power: ', power)
-
+        return power
 
 
     def get_energy(self):
@@ -428,14 +424,14 @@ class INA228:
 
         energy = raw * 3.2 * 16 * self.get_current_lsb()
 
-        print('Energy: ', energy)
+        return energy
 
     
     def get_charge(self):
 
         raw = self.read_register40(self.__INA228_CHARGE)
 
-        print('Charge: ', raw)
+        return raw
 
     
     def get_diag_alerts(self, alert):
@@ -444,68 +440,69 @@ class INA228:
 
         if(alert == INA228_ALERT_ALATCH):
             if (raw & 0x1) == 0x0:
-                print('MEMSTAT: Checksum error is detected in the device trim memory space')
-                return 1
+                return 'MEMSTAT: Checksum error is detected in the device trim memory space'
 
         elif(alert == INA228_ALERT_CNVRF):
             if (raw & 0x2) == 0x1:
-                print('CNVRF: Conversion is completed')
+                return 'CNVRF: Conversion is completed'
 
         elif(alert == INA228_ALERT_BUSUL):
             if (raw & 0x4) == 0x1:
-                print('BUSUL: Bus voltage measurement falls below the threshold limit in the bus under-limit register')
+                return 'BUSUL: Bus voltage measurement falls below the threshold limit in the bus under-limit register'
 
         elif(alert == INA228_ALERT_BUSOL):
             if (raw & 0x8) == 0x1:
-                print('BUSOL: Bus voltage measurement exceeds the threshold limit in the bus over-limit register')
+                return 'BUSOL: Bus voltage measurement exceeds the threshold limit in the bus over-limit register'
 
         elif(alert == INA228_ALERT_SHNTUL):
             if (raw & 0x10) == 0x1:
-                print('SHNTUL: Shunt voltage measurement falls below the threshold limit in the shunt under-limit register')
+                return 'SHNTUL: Shunt voltage measurement falls below the threshold limit in the shunt under-limit register'
 
         elif(alert == INA228_ALERT_SHNTOL):
             if (raw & 0x40) == 0x1:
-                print('SHNTOL: Shunt voltage measurement exceeds the threshold limit in the shunt over-limit register')
+                return 'SHNTOL: Shunt voltage measurement exceeds the threshold limit in the shunt over-limit register'
 
         elif(alert == INA228_ALERT_TMPOL):
             if (raw & 0x80) == 0x1:
-                print('TMPOL: Temperature measurement exceeds the threshold limit in the temperature over-limit register')
+                return 'TMPOL: Temperature measurement exceeds the threshold limit in the temperature over-limit register'
 
         elif(alert == INA228_ALERT_MATHOF):
             if (raw & 0x100) == 0x1:
-                print('MATHOF: Arithmetic operation resulted in an overflow error')
+                return 'MATHOF: Arithmetic operation resulted in an overflow error'
 
         elif(alert == INA228_ALERT_CHARGEOF):
             if (raw & 0x200) == 0x1:
-                print('CHARGEOF: 40 bit CHARGE register has overflowed')
+                return 'CHARGEOF: 40 bit CHARGE register has overflowed'
 
         elif(alert == INA228_ALERT_ENERGYOF):
             if (raw & 0x400) == 0x1:
-                print('ENERGYOF: 40 bit ENERGY register has overflowed')
+                return 'ENERGYOF: 40 bit ENERGY register has overflowed'
 
         elif(alert == INA228_ALERT_APOL):
             if (raw & 0x800) == 0x1:
-                print('APOL: Alert pin polarity inverted (active-high, open-drain)')
+                return 'APOL: Alert pin polarity inverted (active-high, open-drain)'
             else:
-                print('APOL: Alert pin polarity normale (active-low, open-drain)')
+                return 'APOL: Alert pin polarity normale (active-low, open-drain)'
 
         elif(alert == INA228_ALERT_SLOWALERT):
             if (raw & 0x2000) == 0x1:
-                print('SLOWALERT: ALERT function is asserted on the completed averaged value. ALERT comparison on averaged value')
+                return 'SLOWALERT: ALERT function is asserted on the completed averaged value. ALERT comparison on averaged value'
             else:
-                print('SLOWALERT: ALERT comparison on non-averaged (ADC) value')
+                return 'SLOWALERT: ALERT comparison on non-averaged (ADC) value'
 
         elif(alert == INA228_ALERT_CNVR):
             if (raw & 0x4000) == 0x1:
-                print('CNVR: Alert pin to be asserted when the Conversion Ready Flag (bit 1) is asserted, indicating that a conversion cycle has completed. Enables conversion ready flag on ALERT pin')
+                return 'CNVR: Alert pin to be asserted when the Conversion Ready Flag (bit 1) is asserted, indicating that a conversion cycle has completed. Enables conversion ready flag on ALERT pin'
             else:
-                print('CNVR: Disable conversion ready flag on ALERT pin')
+                return 'CNVR: Disable conversion ready flag on ALERT pin'
 
         elif(alert == INA228_ALERT_ALATCH):
             if (raw & 0x8000) == 0x1:
-                print('ALATCH: Latched')
+                return 'ALATCH: Latched'
             else:
-                print('ALATCH: Transparent')
+                return 'ALATCH: Transparent'
+
+        return ''
 
 
     def set_shunt_overvoltage(self, value):
@@ -586,18 +583,15 @@ class INA228:
 
         raw_id = self.read_register16(self.__INA228_MANUFACTURER_ID)
 
-        print('Manufacturer ID (HEX): ', hex(raw_id))
-
         first_byte = (raw_id >> 8) & 0xFF
         second_byte = (raw_id & 0xFF)
 
-        print('Manufacturer ID (CHAR): ', chr(first_byte),chr(second_byte))
+        return (hex(raw_id), chr(first_byte),chr(second_byte))
 
     
     def get_deviceid(self):
 
         raw_id = self.read_register16(self.__INA228_DEVICE_ID)
 
-        print('Device ID: ', hex(raw_id >> 4))
-        print('Revision: ',  hex(raw_id & 0xF))
+        return (hex(raw_id >> 4), hex(raw_id & 0xF))
 

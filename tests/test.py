@@ -9,11 +9,11 @@ i = 0
 
 while True:    
 
-    ina228.get_vbus_voltage()
+    print('VBUS voltage: ', ina228.get_vbus_voltage())
 
-    ina228.get_current()
+    print('Current: ', ina228.get_current())
 
-    ina228.get_power()
+    print('Power: ', ina228.get_power())
 
     if i < 1000:
 
