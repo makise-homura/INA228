@@ -1,12 +1,20 @@
-#############################################################
-#
-#   Driver to INA228 by @megalloid
-#
-#   Need to fix: 
-#   1) Value of VSHUHT is needed to multiply to 10 that get correct value
-#
-##############################################################
+"""Driver for TI INA228 with SMBUS.
 
+Original code by @megalloid.
+Python module created by @makise_homura.
+
+Typical usage:
+
+    from ina228 import INA228
+    ina228 = INA228(bus, addr)
+    ina228.configure()
+    print('Voltage: ', ina228.get_vbus_voltage())
+    print('Current: ', ina228.get_current())
+    print('Power: ', ina228.get_power())
+
+Need to fix:
+    1) Value of VSHUHT is needed to multiply to 10 that get correct value.
+"""
 
 import time
 
@@ -176,6 +184,7 @@ INA228_ALERT_ALATCH = 15
 
 
 class INA228:
+    """Main INA228 interface"""
 
     __INA228_CONFIG         = 0x00
     __INA228_ADC_CONFIG     = 0x01
@@ -199,12 +208,26 @@ class INA228:
     __INA228_DEVICE_ID          = 0x3F
 
     def __init__(self, busnum = INA228_PORT, address = INA228_ADDRESS, shunt_ohms = INA228_SHUNT_OHMS, stub_regmap = None):
+        """Creates INA228 instance.
+
+        Args:
+            busnum: SMBus bus number INA228 connected to.
+            address: SMBus slave address of INA228.
+            shunt_ohms: Shunt value for current measurements.
+            stub_regmap: Used in tests to emulate real INA228.
+
+        Returns:
+            Uninitialized INA228 instance linked to specific SMBus location.
+
+        Raises:
+            Any exception smbus2.SMBus() may raise.
+        """
 
         self._address = address
         self._i2c = mock_SMBus(stub_regmap) if stub_regmap else SMBus(busnum)
         self._shunt_ohms = shunt_ohms
         self._stub_regmap = stub_regmap
-    
+
     def __convert2comp2float(self, twocompdata, nrofbit, factor):
 
         isnegative = 1
@@ -233,7 +256,7 @@ class INA228:
     def read_register40(self, register):
 
         result = self._i2c.read_i2c_block_data(self._address, register, 5)
-        
+
         register_value = ((result[0] << 32) & 0xFF00000000) | ((result[1] << 24) & 0xFF000000) | ((result[2] << 16) & 0xFF0000) | ((result[3] << 8) & 0xFF00) | (result[4] & 0xFF)
 
         #print("Read register 16 bits - 0x%02X: 0x%05X = 0b%s" %(register, register_value, self.__binary_as_string(register_value)))
@@ -244,7 +267,7 @@ class INA228:
     def read_register24(self, register):
 
         result = self._i2c.read_i2c_block_data(self._address, register, 3)
-        
+
         register_value = ((result[0] << 16) & 0xFF0000) | ((result[1] << 8) & 0xFF00) | (result[2] & 0xFF)
 
         #print("Read register 24 bits - 0x%02X: 0x%05X = 0b%s" %(register, register_value, self.__binary_as_string(register_value)))
@@ -255,14 +278,14 @@ class INA228:
     def read_register16(self, register):
 
         result = self._i2c.read_i2c_block_data(self._address, register, 2)
-        
+
         register_value = ((result[0] << 8) & 0xFF00) | (result[1] & 0xFF)
 
         #print("Read register 16 bits - 0x%02X: 0x%04X = 0b%s" %(register, register_value, self.__binary_as_string(register_value)))
 
         return register_value
 
-    
+
     def write_register16(self, register, register_value):
 
         register_bytes = self.__to_bytes(register_value)
@@ -273,7 +296,7 @@ class INA228:
 
         # self._i2c.write_word_data(self._address, register, register_value)
 
-    
+
     def get_current_lsb(self):
 
         if(INA228_ADCRANGE == 0):
@@ -306,7 +329,7 @@ class INA228:
 
         self.write_register16(self.__INA228_CONFIG, config)
 
-    
+
     def reset_energy(self):
 
         config = self.read_register16(self.__INA228_CONFIG)
@@ -353,6 +376,10 @@ class INA228:
 
     
     def configure(self):
+        """Performs initial INA228 configuration.
+
+        Always call this prior to get any data from INA228.
+        """
 
         self.reset_all()
 
@@ -364,8 +391,13 @@ class INA228:
 
         time.sleep(0.1)
 
-    
+
     def get_shunt_voltage(self):
+        """Read voltage on the shunt resistor.
+
+        Returns:
+            Voltage in volts.
+        """
 
         if(INA228_ADCRANGE == 1):
             conversion_factor = 312.5e-9                # nV/LSB
@@ -380,7 +412,12 @@ class INA228:
 
 
     def get_vbus_voltage(self):
-        
+        """Read voltage on the V+/V- terminals.
+
+        Returns:
+            Voltage in volts.
+        """
+
         conversion_factor = 195.3125e-6                 # uV/LSB
 
         raw = self.read_register24(self.__INA228_VBUS)
@@ -391,6 +428,11 @@ class INA228:
 
 
     def get_temp(self):
+        """Read die temperature.
+
+        Returns:
+            Temperature in Celsius.
+        """
 
         conversion_factor = 7.8125e-3
 
@@ -400,8 +442,13 @@ class INA228:
 
         return temp
 
-    
-    def get_current(self):        
+
+    def get_current(self):
+        """Read current through I+/I- terminals.
+
+        Returns:
+            Current in amperes.
+        """
 
         raw = self.read_register24(self.__INA228_CURRENT)
 
@@ -411,17 +458,27 @@ class INA228:
 
 
     def get_power(self):
+        """Read calculated power (a product of voltage and current).
+
+        Returns:
+            Power in watts.
+        """
 
         current_lsb = self.get_current_lsb() 
 
         raw = self.read_register24(self.__INA228_POWER)
 
-        power = (3.2 * raw * current_lsb)       
+        power = (3.2 * raw * current_lsb)
 
         return power
 
 
     def get_energy(self):
+        """Read integral energy (a product of power and time).
+
+        Returns:
+            Energy in joules.
+        """
 
         raw = self.read_register40(self.__INA228_ENERGY)
 
@@ -429,15 +486,28 @@ class INA228:
 
         return energy
 
-    
+
     def get_charge(self):
+        """Read charge spent (a product of current and time).
+
+        Returns:
+            Charge in coulombs.
+        """
 
         raw = self.read_register40(self.__INA228_CHARGE)
 
         return raw
 
-    
+
     def get_diag_alerts(self, alert):
+        """Read current through I+/I- terminals.
+
+        Args:
+            alert: Alert to read (any of INA228_ALERT_* constants).
+
+        Returns:
+            String representation of specific alert, or empty string if nothing to tell (e.g. no chosen alert).
+        """
 
         raw = self.read_register16(self.__INA228_DIAG_ALRT)
 
@@ -526,7 +596,7 @@ class INA228:
 
         self.write_register16(self.__INA228_SOVL, data)
 
-        
+
     def set_shunt_undervoltage(self, value):
 
         if (value >= 0):
@@ -545,7 +615,7 @@ class INA228:
 
         self.write_register16(self.__INA228_SUVL, data)
 
-    
+
     def set_bus_overvoltage(self, value):
 
         data = value / (16 * 195.3125e-6)
@@ -572,7 +642,7 @@ class INA228:
 
         self.write_register16(self.__INA228_TEMP_LIMIT, data)
 
-    
+
     def set_power_overlimit(self, value, consta):
 
         data = value / (16 * consta)
@@ -583,6 +653,11 @@ class INA228:
 
 
     def get_manufacturer_id(self):
+        """Read manufacturer ID.
+
+        Returns:
+            A tuple of (hex, char) manufacturer ID.
+        """
 
         raw_id = self.read_register16(self.__INA228_MANUFACTURER_ID)
 
@@ -591,8 +666,13 @@ class INA228:
 
         return (hex(raw_id), chr(first_byte),chr(second_byte))
 
-    
+
     def get_deviceid(self):
+        """Read device ID.
+
+        Returns:
+            A tuple of (device ID, device revision).
+        """
 
         raw_id = self.read_register16(self.__INA228_DEVICE_ID)
 
