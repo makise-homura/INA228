@@ -11,7 +11,7 @@ python3 -m build
 
 ## Requirements
 
-For mow, it relies on `smbus2` module.
+For now, it relies on `smbus2` module.
 
 ## Testing
 
@@ -24,7 +24,7 @@ python3 -m venv .venv
 Install the module:
 
 ```
-.venv/bin/pip install dist/ina228-0.0.1-py3-none-any.whl --force-reinstall
+.venv/bin/pip install dist/ina228-*.whl --force-reinstall
 ```
 
 Run the test:

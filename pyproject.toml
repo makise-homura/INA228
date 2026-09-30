@@ -3,15 +3,22 @@ requires = ["setuptools==75.8.0"]
 
 [project]
 name = "ina228"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
   { name="Andrey Zaostrovnykh", email="megalloid@gmail.com" },
+  { name="Igor Molchanov", email="akemi_homura@kurisa.ch" },
+]
+maintainers = [
   { name="Igor Molchanov", email="akemi_homura@kurisa.ch" },
 ]
 description = "Driver for TI INA228 with SMBUS"
 readme = "README.md"
 requires-python = ">=3.7"
+keywords = ["electronics", "sensing", "TI", "home automation", "smbus", "ina2xx"]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Home Automation",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
@@ -31,7 +38,7 @@ dynamic = ["dependencies"]
 dependencies = {file = ["requirements.txt"]}
 
 [project.urls]
-Homepage = "https://github.com/makise-homura/INA228/"
+Repository = "https://github.com/makise-homura/INA228/"
 Issues = "https://github.com/makise-homura/INA228/issues/"
 
 [tool.pytest]
