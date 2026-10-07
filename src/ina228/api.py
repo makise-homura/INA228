@@ -304,7 +304,7 @@ class INA228:
         else:
             temp = 40.96e-3
 
-        current_lsb = (temp / INA228_SHUNT_OHMS) / 524288
+        current_lsb = (temp / self._shunt_ohms) / 524288
 
         return current_lsb
 
@@ -365,7 +365,7 @@ class INA228:
     
     def shunt_calib(self):
 
-        calib_value = int(13107.2e6 * self.get_current_lsb() * INA228_SHUNT_OHMS)
+        calib_value = int(13107.2e6 * self.get_current_lsb() * self._shunt_ohms)
 
         self.write_register16(self.__INA228_SHUNT_CAL, calib_value)
 
@@ -582,13 +582,13 @@ class INA228:
 
         if (value >= 0):
 
-            data = (value * INA228_SHUNT_OHMS) / self.get_shunt_conv_factor()
+            data = (value * self._shunt_ohms) / self.get_shunt_conv_factor()
 
         else:
 
             value_temp = value * (-1);
 
-            data = (value_temp * INA228_SHUNT_OHMS) / self.get_shunt_conv_factor()
+            data = (value_temp * self._shunt_ohms) / self.get_shunt_conv_factor()
             data = ~data
             data = data + 1
 
@@ -601,13 +601,13 @@ class INA228:
 
         if (value >= 0):
 
-            data = (value * INA228_SHUNT_OHMS) / self.get_shunt_conv_factor()
+            data = (value * self._shunt_ohms) / self.get_shunt_conv_factor()
 
         else:
 
             value_temp = value * (-1);
 
-            data = (value_temp * INA228_SHUNT_OHMS) / self.get_shunt_conv_factor()
+            data = (value_temp * self._shunt_ohms) / self.get_shunt_conv_factor()
             data = ~data
             data = data + 1
 
