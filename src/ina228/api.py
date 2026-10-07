@@ -656,7 +656,7 @@ class INA228:
         """Read manufacturer ID.
 
         Returns:
-            A tuple of (hex, char) manufacturer ID.
+            A tuple of (hex, char1, char2) manufacturer ID.
         """
 
         raw_id = self.read_register16(self.__INA228_MANUFACTURER_ID)
@@ -664,7 +664,7 @@ class INA228:
         first_byte = (raw_id >> 8) & 0xFF
         second_byte = (raw_id & 0xFF)
 
-        return (hex(raw_id), chr(first_byte),chr(second_byte))
+        return (hex(raw_id), chr(first_byte), chr(second_byte))
 
 
     def get_deviceid(self):
