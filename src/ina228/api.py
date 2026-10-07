@@ -496,7 +496,9 @@ class INA228:
 
         raw = self.read_register40(self.__INA228_CHARGE)
 
-        return raw
+        charge = self.__convert2comp2float(raw >> 4, 20, self.get_current_lsb())
+
+        return charge
 
 
     def get_diag_alerts(self, alert):
