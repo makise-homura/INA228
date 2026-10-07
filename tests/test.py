@@ -29,27 +29,20 @@ def test_main():
 
         sleep(sleep_sec)
 
-        print('VBUS voltage: ', ina228.get_vbus_voltage())
-
-        print('Current: ', ina228.get_current())
-
-        print('Power: ', ina228.get_power())
-
-        print('Shunt voltage: ', ina228.get_shunt_voltage())
-
-        print('Die temp: ', ina228.get_temp())
-
-        print('Energy: ', ina228.get_energy())
-
-        print('Charge: ', ina228.get_charge())
+        print('---------------------------------------')
+        print(f'Iteration:     {i}')
+        print(f'Time:          {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]}')
+        print(f'VBUS voltage:  {ina228.get_vbus_voltage():7.3f}  V')
+        print(f'Current:       {ina228.get_current():7.3f}  A')
+        print(f'Power:         {ina228.get_power():7.3f}  W')
+        print(f'Shunt voltage: {ina228.get_shunt_voltage() * 1000:7.3f} mV')
+        print(f'Die temp:      {ina228.get_temp():7.3f} °C')
+        print(f'Energy:        {ina228.get_energy():7.3f}  J')
+        print(f'Charge:        {ina228.get_charge():7.3f}  C')
 
         if i < iterations:
-
             i = i +1
-            print(i, datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
-
         else:
-
             break
 
 if __name__ =="__main__":
