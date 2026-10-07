@@ -33,10 +33,16 @@ Run the test:
 .venv/bin/python tests/test.py
 ```
 
-Test will use supplied `stub_regmap.py`, not the real INA228.
+Test will use supplied `stub_regmap.py` by default, not the real INA228.
 If you want your own one, generate it by running `./map.sh > stub_regmap.py` on the system with live INA228.
 You may need to edit bus number and slave address in `map.sh` though.
 And remember to install `i2cget` with something like `apt install i2c-tools` prior to running this.
+
+If you want to use live INA228 instead, specify bus, address, and shunt resistance in command line like this:
+
+```
+.venv/bin/python tests/test.py 0 0x40 0.002
+```
 
 If you want to use pytest, install it into venv:
 
