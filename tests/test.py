@@ -4,7 +4,7 @@ def test_main():
 
     from stub_regmap import stub_regmap
 
-    ina228 = INA228(stub_regmap=stub_regmap)
+    ina228 = INA228(stub_regmap=stub_regmap, shunt_ohms = 0.002)
 
     ina228.configure()
 
