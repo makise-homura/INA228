@@ -66,3 +66,14 @@ And then run:
 ```console
 .venv/bin/python -m pytest
 ```
+
+#### tox
+
+Install tox (somehow like `apt install tox`) and all Python versions you're up to test the project with.
+For now, tox can test the project with Python versions 3.7, 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14, and 3.15.
+
+Run it from the root directory of the project:
+
+```console
+tox
+```
