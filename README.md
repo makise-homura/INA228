@@ -5,7 +5,7 @@ Driver for TI INA228 voltage/current sensor located on SMBus.
 ## Installation
 
 Module is [available](https://pypi.org/project/ina228/) on PyPi.
-So just `pip install ina228` should be enough, if you're not up to contribute.
+So just `pip install ina228` should be enough, if you're not up to contributing.
 
 ## Typical usage
 
@@ -52,7 +52,7 @@ Then you may use every method you want to get measurement results.
 * `get_manufacturer_id()`: Read manufacturer ID.
 * `get_deviceid()`: Read device ID.
 
-Detailed documentation can be found in the docstrings in `src/api.py`.
+Detailed documentation can be found in the docstrings in [api.py](src/ina228/api.py).
 
 ## Building from source
 
