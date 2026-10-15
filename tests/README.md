@@ -30,6 +30,10 @@ Run the test like this:
 
 #### Test behavior
 
+Test will perform 10 iterations with a 0.1-second interval.
+Each iteration will read out VBUS voltage, current, power, shunt voltage, die temp, energy, and charge using INA228 module,
+and print them out along with iteration number and current time.
+
 Test will use supplied `stub_regmap.py` by default, not the real INA228.
 It is a dump of registers once performed on the live INA228, and used by test so it will not depend on hardware.
 
