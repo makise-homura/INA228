@@ -3,7 +3,7 @@ requires = ["setuptools==75.8.0"]
 
 [project]
 name = "ina228"
-version = "0.0.3"
+version = "0.0.4"
 authors = [
   { name="Andrey Zaostrovnykh", email="megalloid@gmail.com" },
   { name="Igor Molchanov", email="akemi_homura@kurisa.ch" },
