@@ -30,20 +30,28 @@ Run the test like this:
 
 #### Test behavior
 
-Test will perform 10 iterations with a 0.1-second interval.
+By default, test will perform 10 iterations with a 0.1-second interval on an emulated INA228 (not the real one even if it exists).
 Each iteration will read out VBUS voltage, current, power, shunt voltage, die temp, energy, and charge using INA228 module,
 and print them out along with iteration number and current time.
 
-Test will use supplied `stub_regmap.py` by default, not the real INA228.
-It is a dump of registers once performed on the live INA228, and used by test so it will not depend on hardware.
+#### INA228 emulation
+
+Emulation will use supplied `stub_regmap.py` by default.
+It is a dump of registers once captured on the live INA228, and used by the test so it will not depend on hardware.
 
 If you want your own stub regmap, generate it by running `./map.sh > stub_regmap.py` on the system with live INA228.
-You may need to edit bus number and slave address in `map.sh`,
-and don't forget to install `i2cget` with something like `apt install i2c-tools` prior to running this.
+Don't forget to install `i2cget` with something like `apt install i2c-tools` prior to running this.
 
-#### Testing on live INA228
+By default, `map.sh` expects to find INA228 on bus 0, address 0x40.
+You may specify different bus number and/or slave address with environment variables, like this:
 
-If you want to use live INA228 instead, specify bus, address, and shunt resistance in command line like this:
+```console
+bus=2 addr=0x42 ./map.sh > stub_regmap.py
+```
+
+#### Testing on a live INA228
+
+If you want to use a live INA228 instead of the emulated one, specify bus, address, and shunt resistance in command line like this:
 
 ```console
 .venv/bin/python tests/test.py 0 0x40 0.002
