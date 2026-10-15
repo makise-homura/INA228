@@ -28,6 +28,8 @@ Run the test like this:
 .venv/bin/python tests/test.py
 ```
 
+It will test the module you've just installed in your venv.
+
 #### Test behavior
 
 By default, test will perform 10 iterations with a 0.1-second interval on an emulated INA228 (not the real one even if it exists).
@@ -75,6 +77,8 @@ And then run:
 .venv/bin/python -m pytest
 ```
 
+It will also test the module installed into your venv.
+
 #### tox
 
 Install tox (somehow like `apt install tox`) and all Python versions you're up to test the project with.
@@ -85,3 +89,6 @@ Run it from the root directory of the project:
 ```console
 tox
 ```
+
+It will automatically build the package for each of the environments,
+so you may skip all preparation steps, including building the package.
