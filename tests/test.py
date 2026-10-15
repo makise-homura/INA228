@@ -1,4 +1,24 @@
 def test_main():
+    """Perform testing of INA228 module.
+    Module to test must be installed into the venv from which test is being ran.
+    Accepts no less than 3 command-line arguments. If not given, uses a stub
+    regmap, otherwise treats these arguments as parameters of a real INA228
+    to be used in testing.
+    Bus number and slave address may be given in hex, like 0xa or 0x40.
+    Performs 5 iterations with 1 second delay before each one on a live INA228,
+    or 10 iterations with 0.1 second delay in case of regmap is being used.
+
+    Args:
+        None.
+
+    Command-line args:
+        argv[1]: Bus number where INA228 is located.
+        argv[2]: Slave address of INA228.
+        argv[3]: Shunt resistance in Ohms.
+
+    Returns:
+        Nothing.
+    """
     from sys import argv
     from time import sleep
     from ina228 import INA228
