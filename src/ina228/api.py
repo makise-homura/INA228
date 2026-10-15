@@ -1,10 +1,9 @@
-"""Driver for TI INA228 with SMBUS.
+"""Driver for TI INA228 voltage/current sensor located on SMBus.
 
 Original code by @megalloid.
-Python module created by @makise_homura.
+Python module created and maintained by @makise_homura.
 
 Typical usage:
-
     from ina228 import INA228
     ina228 = INA228(bus, addr)
     ina228.configure()
@@ -13,7 +12,7 @@ Typical usage:
     print('Power: ', ina228.get_power())
 
 Need to fix:
-    1) Value of VSHUHT is needed to multiply to 10 that get correct value.
+    1) Value of VSHUNT is needed to be multiplied by 10 to get correct value.
 """
 
 import time
@@ -30,7 +29,7 @@ INA228_SHUNT_TEMPCO_VALUE = 0
 
 #############################################################
 # INA228 Reset bytes for CONFIG [15] / [14]
-# Decription: 
+# Description:
 # RST - Generates a system reset that is the same as power-on reset.
 # RSTACC - Resets the contents of accumulation registers ENERGY and CHARGE to 0
 #############################################################
@@ -70,7 +69,7 @@ INA228_ADCRANGE_NBIT = 4
 
 #############################################################
 # INA228 ADC Mode
-# Description: The user can set the MODE bits for continuous or 
+# Description: The user can set the MODE bits for continuous or
 # triggered mode on bus voltage, shunt voltage or temperature measurement.
 #
 # Values:
@@ -95,7 +94,7 @@ INA228_ADC_MODE = 0xB
 INA228_ADC_MODE_NBIT = 12
 
 #############################################################
-# INA228 ADC conversion time of bus voltage meas.
+# INA228 ADC conversion time of bus voltage measurement.
 # Description: Sets the conversion time of the bus voltage measurement
 #
 # Values:
@@ -112,7 +111,7 @@ INA228_VBUS_CONV_TIME = 0x05
 INA228_VBUS_CONV_TIME_NBIT = 0x09
 
 #############################################################
-# INA228 ADC conversion time of shunt voltage meas.
+# INA228 ADC conversion time of shunt voltage measurement.
 # Description: Sets the conversion time of the shunt voltage measurement
 #
 # Values:
@@ -129,8 +128,8 @@ INA228_VSHCT_CONV_TIME = 0x05
 INA228_VSHCT_CONV_TIME_NBIT = 0x06
 
 #############################################################
-# INA228 ADC conversion time of temperatrure meas.
-# Description: Sets the conversion time of the temperatrure measurement
+# INA228 ADC conversion time of temperatrure measurement.
+# Description: Sets the conversion time of the temperature measurement
 #
 # Values:
 # 0x00h = 50 μs
@@ -147,9 +146,9 @@ INA228_VTCT_CONV_TIME_NBIT = 0x03
 
 
 #############################################################
-# INA228 ADC sample averaging count. 
+# INA228 ADC sample averaging count.
 #
-# Values: 
+# Values:
 # 0x0h = 1
 # 0x1h = 4
 # 0x2h = 16
@@ -208,7 +207,7 @@ class INA228:
     __INA228_DEVICE_ID          = 0x3F
 
     def __init__(self, busnum = INA228_PORT, address = INA228_ADDRESS, shunt_ohms = INA228_SHUNT_OHMS, stub_regmap = None):
-        """Creates INA228 instance.
+        """Create INA228 instance.
 
         Args:
             busnum: SMBus bus number INA228 connected to.
@@ -320,6 +319,14 @@ class INA228:
 
 
     def reset_all(self):
+        """Perform the power-on reset of the chip.
+
+        Args:
+            None.
+
+        Returns:
+            Nothing.
+        """
 
         config = self.read_register16(self.__INA228_CONFIG)
 
@@ -331,6 +338,14 @@ class INA228:
 
 
     def reset_energy(self):
+        """Reset energy and charge counters.
+
+        Args:
+            None.
+
+        Returns:
+            Nothing.
+        """
 
         config = self.read_register16(self.__INA228_CONFIG)
 
@@ -362,23 +377,28 @@ class INA228:
 
         self.write_register16(self.__INA228_ADC_CONFIG, config)
 
-    
+
     def shunt_calib(self):
 
         calib_value = int(13107.2e6 * self.get_current_lsb() * self._shunt_ohms)
 
         self.write_register16(self.__INA228_SHUNT_CAL, calib_value)
 
-    
+
     def shunt_tempco(self):
 
         self.write_register16(self.__INA228_SHUNT_TEMPCO, INA228_SHUNT_TEMPCO_VALUE)
 
-    
+
     def configure(self):
         """Performs initial INA228 configuration.
-
         Always call this prior to get any data from INA228.
+
+        Args:
+            None.
+
+        Returns:
+            Nothing.
         """
 
         self.reset_all()
@@ -395,6 +415,9 @@ class INA228:
     def get_shunt_voltage(self):
         """Read voltage on the shunt resistor.
 
+        Args:
+            None.
+
         Returns:
             Voltage in volts.
         """
@@ -402,7 +425,7 @@ class INA228:
         if(INA228_ADCRANGE == 1):
             conversion_factor = 312.5e-9                # nV/LSB
         else:
-            conversion_factor = 78.125e-9               # nV/LSB  
+            conversion_factor = 78.125e-9               # nV/LSB
 
         raw = self.read_register24(self.__INA228_VSHUNT)
 
@@ -413,6 +436,9 @@ class INA228:
 
     def get_vbus_voltage(self):
         """Read voltage on the V+/V- terminals.
+
+        Args:
+            None.
 
         Returns:
             Voltage in volts.
@@ -430,6 +456,9 @@ class INA228:
     def get_temp(self):
         """Read die temperature.
 
+        Args:
+            None.
+
         Returns:
             Temperature in Celsius.
         """
@@ -446,6 +475,9 @@ class INA228:
     def get_current(self):
         """Read current through I+/I- terminals.
 
+        Args:
+            None.
+
         Returns:
             Current in amperes.
         """
@@ -460,11 +492,14 @@ class INA228:
     def get_power(self):
         """Read calculated power (a product of voltage and current).
 
+        Args:
+            None.
+
         Returns:
             Power in watts.
         """
 
-        current_lsb = self.get_current_lsb() 
+        current_lsb = self.get_current_lsb()
 
         raw = self.read_register24(self.__INA228_POWER)
 
@@ -474,7 +509,10 @@ class INA228:
 
 
     def get_energy(self):
-        """Read integral energy (a product of power and time).
+        """Read integral energy (a product of power and time since last reset).
+
+        Args:
+            None.
 
         Returns:
             Energy in joules.
@@ -488,7 +526,10 @@ class INA228:
 
 
     def get_charge(self):
-        """Read charge spent (a product of current and time).
+        """Read charge spent (a product of current and time since last reset).
+
+        Args:
+            None.
 
         Returns:
             Charge in coulombs.
@@ -502,7 +543,7 @@ class INA228:
 
 
     def get_diag_alerts(self, alert):
-        """Read current through I+/I- terminals.
+        """Test if specific alert is active.
 
         Args:
             alert: Alert to read (any of INA228_ALERT_* constants).
@@ -581,6 +622,14 @@ class INA228:
 
 
     def set_shunt_overvoltage(self, value):
+        """Set high alert threshold of the shunt resistor voltage.
+
+        Args:
+            value: Limit in volts.
+
+        Returns:
+            Nothing.
+        """
 
         if (value >= 0):
 
@@ -600,6 +649,14 @@ class INA228:
 
 
     def set_shunt_undervoltage(self, value):
+        """Set low alert threshold of the shunt resistor voltage.
+
+        Args:
+            value: Limit in volts.
+
+        Returns:
+            Nothing.
+        """
 
         if (value >= 0):
 
@@ -619,6 +676,14 @@ class INA228:
 
 
     def set_bus_overvoltage(self, value):
+        """Set high alert threshold of the V+/V- terminals voltage.
+
+        Args:
+            value: Limit in volts.
+
+        Returns:
+            Nothing.
+        """
 
         data = value / (16 * 195.3125e-6)
 
@@ -628,6 +693,14 @@ class INA228:
 
 
     def set_bus_undervoltage(self, value):
+        """Set low alert threshold of the V+/V- terminals voltage.
+
+        Args:
+            value: Limit in volts.
+
+        Returns:
+            Nothing.
+        """
 
         data = value / (16 * 195.3125e-6)
 
@@ -637,6 +710,15 @@ class INA228:
 
 
     def set_temp_limit(self, value, consta):
+        """Set high alert threshold of the die temperature.
+
+        Args:
+            value: Limit in Celsius.
+            consta: Unknown, to be removed in future revisions.
+
+        Returns:
+            Nothing.
+        """
 
         data = value / (16 * consta)
 
@@ -646,6 +728,15 @@ class INA228:
 
 
     def set_power_overlimit(self, value, consta):
+        """Set high alert threshold of the load power.
+
+        Args:
+            value: Limit in watts.
+            consta: Unknown, to be removed in future revisions.
+
+        Returns:
+            Nothing.
+        """
 
         data = value / (16 * consta)
 
@@ -656,6 +747,9 @@ class INA228:
 
     def get_manufacturer_id(self):
         """Read manufacturer ID.
+
+        Args:
+            None.
 
         Returns:
             A tuple of (hex, char1, char2) manufacturer ID.
@@ -672,6 +766,9 @@ class INA228:
     def get_deviceid(self):
         """Read device ID.
 
+        Args:
+            None.
+
         Returns:
             A tuple of (device ID, device revision).
         """
@@ -679,4 +776,3 @@ class INA228:
         raw_id = self.read_register16(self.__INA228_DEVICE_ID)
 
         return (hex(raw_id >> 4), hex(raw_id & 0xF))
-
