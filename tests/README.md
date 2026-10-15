@@ -8,13 +8,13 @@ First, build the package.
 
 After building the package, create venv for testing (you might need `python3-venv` for this):
 
-```shell
+```console
 python3 -m venv .venv
 ```
 
 Install the module you've built there:
 
-```shell
+```console
 .venv/bin/pip install dist/ina228-*.whl --force-reinstall
 ```
 
@@ -24,7 +24,7 @@ Install the module you've built there:
 
 Run the test like this:
 
-```shell
+```console
 .venv/bin/python tests/test.py
 ```
 
@@ -41,7 +41,7 @@ and don't forget to install `i2cget` with something like `apt install i2c-tools`
 
 If you want to use live INA228 instead, specify bus, address, and shunt resistance in command line like this:
 
-```shell
+```console
 .venv/bin/python tests/test.py 0 0x40 0.002
 ```
 
@@ -53,12 +53,12 @@ Test will perform 5 iterations with a 1-second interval.
 
 If you want to use pytest, install it into venv:
 
-```shell
+```console
 .venv/bin/pip install pytest
 ```
 
 And then run:
 
-```shell
+```console
 .venv/bin/python -m pytest
 ```
