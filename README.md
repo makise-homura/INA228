@@ -80,7 +80,6 @@ See [corresponding README](tests/README.md).
 * Special methods not intended to be used by user should be made private.
 * All trash should be put out to constants file.
 * Alert register read should be redone in a more correct way.
-* Manufacturer ID should be returned in string, not separate bytes.
 
 ## Credits
 

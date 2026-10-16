@@ -41,7 +41,7 @@ def test_main():
 
     i = 0
 
-    print('Manufacturer ID (HEX): {}, (CHAR): {}{}'.format(*ina228.get_manufacturer_id()))
+    print(f'Manufacturer: {ina228.get_manufacturer_id()}')
 
     print('Device ID: {}, Revision: {}'.format(*ina228.get_deviceid()))
 

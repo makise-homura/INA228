@@ -752,15 +752,12 @@ class INA228:
             None.
 
         Returns:
-            A tuple of (hex, char1, char2) manufacturer ID.
+            A string of 2 characters containing manufacturer ID.
         """
 
         raw_id = self.read_register16(self.__INA228_MANUFACTURER_ID)
 
-        first_byte = (raw_id >> 8) & 0xFF
-        second_byte = (raw_id & 0xFF)
-
-        return (hex(raw_id), chr(first_byte), chr(second_byte))
+        return raw_id.to_bytes(2,'big').decode()
 
 
     def get_deviceid(self):
