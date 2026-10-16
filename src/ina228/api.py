@@ -185,26 +185,28 @@ class Alert(Enum):
 class INA228:
     """Main INA228 interface"""
 
-    __INA228_CONFIG         = 0x00
-    __INA228_ADC_CONFIG     = 0x01
-    __INA228_SHUNT_CAL      = 0x02
-    __INA228_SHUNT_TEMPCO   = 0x03
-    __INA228_VSHUNT         = 0x04
-    __INA228_VBUS           = 0x05
-    __INA228_DIETEMP        = 0x06
-    __INA228_CURRENT        = 0x07
-    __INA228_POWER          = 0x08
-    __INA228_ENERGY         = 0x09
-    __INA228_CHARGE         = 0x0A
-    __INA228_DIAG_ALRT      = 0x0B
-    __INA228_SOVL           = 0x0C
-    __INA228_SUVL           = 0x0D
-    __INA228_BOVL           = 0x0E
-    __INA228_BUVL               = 0x0F
-    __INA228_TEMP_LIMIT         = 0x10
-    __INA228_PWR_LIMIT          = 0x11
-    __INA228_MANUFACTURER_ID    = 0x3E
-    __INA228_DEVICE_ID          = 0x3F
+    class Register(Enum):
+        CONFIG          = 0x00
+        ADC_CONFIG      = 0x01
+        SHUNT_CAL       = 0x02
+        SHUNT_TEMPCO    = 0x03
+        VSHUNT          = 0x04
+        VBUS            = 0x05
+        DIETEMP         = 0x06
+        CURRENT         = 0x07
+        POWER           = 0x08
+        ENERGY          = 0x09
+        CHARGE          = 0x0A
+        DIAG_ALRT       = 0x0B
+        SOVL            = 0x0C
+        SUVL            = 0x0D
+        BOVL            = 0x0E
+        BUVL            = 0x0F
+        TEMP_LIMIT      = 0x10
+        PWR_LIMIT       = 0x11
+        MANUFACTURER_ID = 0x3E
+        DEVICE_ID       = 0x3F
+
 
     def __init__(self, busnum = INA228_DEFAULT_PORT, address = INA228_DEFAULT_ADDRESS, shunt_ohms = INA228_DEFAULT_SHUNT_OHMS, tempco = INA228_DEFAULT_SHUNT_TEMPCO_VALUE, stub_regmap = None):
         """Create INA228 instance.
@@ -257,21 +259,21 @@ class INA228:
 
     def __read_register40(self, register):
 
-        result = self._i2c.read_i2c_block_data(self._address, register, 5)
+        result = self._i2c.read_i2c_block_data(self._address, register.value, 5)
 
         return int.from_bytes(result,'big')
 
 
     def __read_register24(self, register):
 
-        result = self._i2c.read_i2c_block_data(self._address, register, 3)
+        result = self._i2c.read_i2c_block_data(self._address, register.value, 3)
 
         return int.from_bytes(result,'big')
 
 
     def __read_register16(self, register):
 
-        result = self._i2c.read_i2c_block_data(self._address, register, 2)
+        result = self._i2c.read_i2c_block_data(self._address, register.value, 2)
 
         return int.from_bytes(result,'big')
 
@@ -280,7 +282,7 @@ class INA228:
 
         register_bytes = list(register_value.to_bytes(2,'big'))
 
-        self._i2c.write_i2c_block_data(self._address, register, register_bytes)
+        self._i2c.write_i2c_block_data(self._address, register.value, register_bytes)
 
 
     def __get_current_lsb(self):
@@ -318,34 +320,34 @@ class INA228:
 
         # Write settings to CONFIG register
 
-        config = self.__read_register16(self. __INA228_CONFIG)
+        config = self.__read_register16(self.Register.CONFIG)
 
         config = config | (self._conversion_delay << INA228_CONVDLY_NBIT) | (self._temp_comp << INA228_TEMPCOMP_NBIT) | (self._adcrange << INA228_ADCRANGE_NBIT)
 
-        self.__write_register16(self.__INA228_CONFIG, config)
+        self.__write_register16(self.Register.CONFIG, config)
 
 
     def __set_adc_config(self):
 
         # Write settings to ADC CONFIG register
 
-        config = self.__read_register16(self. __INA228_ADC_CONFIG)
+        config = self.__read_register16(self.Register.ADC_CONFIG)
 
         config = config | (self._adc_mode << INA228_ADC_MODE_NBIT) | (self._vbus_conv_time << INA228_VBUS_CONV_TIME_NBIT ) | (self._vshct_conv_time << INA228_VSHCT_CONV_TIME_NBIT) | (self._vtct_conv_time << INA228_VTCT_CONV_TIME_NBIT) | (self._adc_avg << INA228_AVG_NBIT)
 
-        self.__write_register16(self.__INA228_ADC_CONFIG, config)
+        self.__write_register16(self.Register.ADC_CONFIG, config)
 
 
     def __shunt_calib(self):
 
         calib_value = int(13107.2e6 * self.__get_current_lsb() * self._shunt_ohms)   # Equation (1) in datasheet
 
-        self.__write_register16(self.__INA228_SHUNT_CAL, calib_value)
+        self.__write_register16(self.Register.SHUNT_CAL, calib_value)
 
 
     def __shunt_tempco(self):
 
-        self.__write_register16(self.__INA228_SHUNT_TEMPCO, self._tempco)
+        self.__write_register16(self.Register.SHUNT_TEMPCO, self._tempco)
 
 
     def reset_all(self):
@@ -358,13 +360,13 @@ class INA228:
             Nothing.
         """
 
-        config = self.__read_register16(self.__INA228_CONFIG)
+        config = self.__read_register16(self.Register.CONFIG)
 
         data = 1 << INA228_RST_NBIT
 
         config = config | data
 
-        self.__write_register16(self.__INA228_CONFIG, config)
+        self.__write_register16(self.Register.CONFIG, config)
 
 
     def reset_energy(self):
@@ -377,13 +379,13 @@ class INA228:
             Nothing.
         """
 
-        config = self.__read_register16(self.__INA228_CONFIG)
+        config = self.__read_register16(self.Register.CONFIG)
 
         data = 1 << INA228_RSTACC_NBIT
 
         config = config | data
 
-        self.__write_register16(self.__INA228_CONFIG, config)
+        self.__write_register16(self.Register.CONFIG, config)
 
 
     def configure(self, conversion_delay = INA228_CONVERSION_DELAY, temp_comp = INA228_TEMP_COMP, adcrange = INA228_ADCRANGE, adc_mode = INA228_ADC_MODE, vbus_conv_time = INA228_VBUS_CONV_TIME, vshct_conv_time = INA228_VSHCT_CONV_TIME, vtct_conv_time = INA228_VTCT_CONV_TIME, adc_avg = INA228_ADC_AVG):
@@ -437,7 +439,7 @@ class INA228:
             Voltage in volts.
         """
 
-        raw = self.__read_register24(self.__INA228_VSHUNT)
+        raw = self.__read_register24(self.Register.VSHUNT)
 
         vshunt = (self.__convert2comp2float(raw >> 4, 20, self.__get_shunt_conv_factor())) * 10   # Table 11 in datasheet, for *10 see Known Bugs
 
@@ -454,7 +456,7 @@ class INA228:
             Voltage in volts.
         """
 
-        raw = self.__read_register24(self.__INA228_VBUS)
+        raw = self.__read_register24(self.Register.VBUS)
 
         vbus = self.__convert2comp2float(raw >> 4, 20, self.__get_vbus_conv_factor())   # Table 12 in datasheet
 
@@ -471,7 +473,7 @@ class INA228:
             Temperature in Celsius.
         """
 
-        raw = self.__read_register16(self.__INA228_DIETEMP)
+        raw = self.__read_register16(self.Register.DIETEMP)
 
         temp = self.__convert2comp2float(raw, 16, self.__get_temp_conv_factor())   # Table 13 in datasheet
 
@@ -488,7 +490,7 @@ class INA228:
             Current in amperes.
         """
 
-        raw = self.__read_register24(self.__INA228_CURRENT)
+        raw = self.__read_register24(self.Register.CURRENT)
 
         current = self.__convert2comp2float(raw >> 4, 20, self.__get_current_lsb())   # Equation (3) in datasheet
 
@@ -505,7 +507,7 @@ class INA228:
             Power in watts.
         """
 
-        raw = self.__read_register24(self.__INA228_POWER)
+        raw = self.__read_register24(self.Register.POWER)
 
         power = raw * 3.2 * self.__get_current_lsb()   # Equation (4) in datasheet
 
@@ -522,7 +524,7 @@ class INA228:
             Energy in joules.
         """
 
-        raw = self.__read_register40(self.__INA228_ENERGY)
+        raw = self.__read_register40(self.Register.ENERGY)
 
         energy = raw * 3.2 * 16 * self.__get_current_lsb()   # Equation (5) in datasheet
 
@@ -539,7 +541,7 @@ class INA228:
             Charge in coulombs.
         """
 
-        raw = self.__read_register40(self.__INA228_CHARGE)
+        raw = self.__read_register40(self.Register.CHARGE)
 
         charge = self.__convert2comp2float(raw, 40, self.__get_current_lsb())   # Equation (6) in datasheet
 
@@ -556,7 +558,7 @@ class INA228:
             List of Alert constants matching all active alert bits in alert register.
         """
 
-        raw = self.__read_register16(self.__INA228_DIAG_ALRT)
+        raw = self.__read_register16(self.Register.DIAG_ALRT)
 
         alerts = []
 
@@ -601,12 +603,12 @@ class INA228:
             None.
         """
 
-        data = self.__read_register16(self.__INA228_DIAG_ALRT) & 0x0FFF
+        data = self.__read_register16(self.Register.DIAG_ALRT) & 0x0FFF
 
         for alert in args:
             data |= (1 << alert.value)
 
-        self.__write_register16(self.__INA228_BOVL, data)
+        self.__write_register16(self.Register.BOVL, data)
 
 
     def set_shunt_overvoltage(self, value):
@@ -621,9 +623,9 @@ class INA228:
 
         data = __convertfloat22comp(value, 16, self.__get_shunt_conv_factor())   # Table 19 in datasheet
 
-        self.__read_register16(self.__INA228_SOVL)
+        self.__read_register16(self.Register.SOVL)
 
-        self.__write_register16(self.__INA228_SOVL, data)
+        self.__write_register16(self.Register.SOVL, data)
 
 
     def set_shunt_undervoltage(self, value):
@@ -638,9 +640,9 @@ class INA228:
 
         data = __convertfloat22comp(value, 16, self.__get_shunt_conv_factor())   # Table 20 in datasheet
 
-        self.__read_register16(self.__INA228_SUVL)
+        self.__read_register16(self.Register.SUVL)
 
-        self.__write_register16(self.__INA228_SUVL, data)
+        self.__write_register16(self.Register.SUVL, data)
 
 
     def set_bus_overvoltage(self, value):
@@ -655,9 +657,9 @@ class INA228:
 
         data = value / self.__get_vbus_conv_factor()   # Table 21 in datasheet
 
-        self.__read_register16(self.__INA228_BOVL)
+        self.__read_register16(self.Register.BOVL)
 
-        self.__write_register16(self.__INA228_BOVL, data)
+        self.__write_register16(self.Register.BOVL, data)
 
 
     def set_bus_undervoltage(self, value):
@@ -672,9 +674,9 @@ class INA228:
 
         data = value / self.__get_vbus_conv_factor()   # Table 22 in datasheet
 
-        self.__read_register16(self.__INA228_BUVL)
+        self.__read_register16(self.Register.BUVL)
 
-        self.__write_register16(self.__INA228_BUVL, data)
+        self.__write_register16(self.Register.BUVL, data)
 
 
     def set_temp_limit(self, value):
@@ -689,9 +691,9 @@ class INA228:
 
         data = __convertfloat22comp(value, 16, self.__get_temp_conv_factor())   # Table 23 in datasheet
 
-        self.__read_register16(self.__INA228_TEMP_LIMIT)
+        self.__read_register16(self.Register.TEMP_LIMIT)
 
-        self.__write_register16(self.__INA228_TEMP_LIMIT, data)
+        self.__write_register16(self.Register.TEMP_LIMIT, data)
 
 
     def set_power_overlimit(self, value):
@@ -706,9 +708,9 @@ class INA228:
 
         data = value / (3.2 * self.__get_current_lsb())   # Equation (4) and Table 24 in datasheet
 
-        self.__read_register16(self.__INA228_PWR_LIMIT)
+        self.__read_register16(self.Register.PWR_LIMIT)
 
-        self.__write_register16(self.__INA228_PWR_LIMIT, data)
+        self.__write_register16(self.Register.PWR_LIMIT, data)
 
 
     def get_manufacturer_id(self):
@@ -721,7 +723,7 @@ class INA228:
             A string of 2 characters containing manufacturer ID.
         """
 
-        raw_id = self.__read_register16(self.__INA228_MANUFACTURER_ID)
+        raw_id = self.__read_register16(self.Register.MANUFACTURER_ID)
 
         return raw_id.to_bytes(2,'big').decode()
 
@@ -736,6 +738,6 @@ class INA228:
             A tuple of (device ID, device revision).
         """
 
-        raw_id = self.__read_register16(self.__INA228_DEVICE_ID)
+        raw_id = self.__read_register16(self.Register.DEVICE_ID)
 
         return (hex(raw_id >> 4), hex(raw_id & 0xF))
