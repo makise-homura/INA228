@@ -81,8 +81,6 @@ See [corresponding README](tests/README.md).
 
 * Value of VSHUNT is needed to be multiplied by 10 to get correct value.
 
-* All trash should be put out to constants file.
-
 ## Credits
 
 Original code by [@megalloid](https://t.me/megalloid).

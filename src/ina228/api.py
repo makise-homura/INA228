@@ -22,146 +22,7 @@ from smbus2 import SMBus
 
 from .testing import mock_SMBus
 
-# Default parameters
-INA228_DEFAULT_PORT = 1
-INA228_DEFAULT_ADDRESS = 0x45
-INA228_DEFAULT_SHUNT_OHMS = 0.025
-INA228_DEFAULT_SHUNT_TEMPCO_VALUE = 0
-
-#############################################################
-# INA228 Reset bytes for CONFIG [15] / [14]
-# Description:
-# RST - Generates a system reset that is the same as power-on reset.
-# RSTACC - Resets the contents of accumulation registers ENERGY and CHARGE to 0
-#############################################################
-INA228_RST_NBIT = 15
-INA228_RSTACC_NBIT = 14
-
-#############################################################
-# INA228 Initial conversion delay CONFIG [13:6]
-# Description: Delay for initial ADC conversion in steps of 2 ms
-# Values:
-# 0x0 - 0 seconds (default)
-# 0x1 - 2 ms
-# 0xFF - 510ms
-#############################################################
-INA228_CONVERSION_DELAY = 0
-INA228_CONVDLY_NBIT = 6
-
-#############################################################
-# INA228 Temperature compensation CONFIG [5]
-# Description: Enables temperature compensation of an external shunt
-# Values:
-# 0x0 - disabled (default)
-# 0x1 - enabled
-#############################################################
-INA228_TEMP_COMP = 0
-INA228_TEMPCOMP_NBIT = 5
-
-#############################################################
-# INA228 ADC Shunt full scale range selection CONFIG [4]
-# Description: Shunt full scale range selection across IN+ and IN–.
-# Values:
-# 0x0 - ±163.84 mV (default)
-# 0x1 - ±40.96 mV
-#############################################################
-INA228_ADCRANGE = 0
-INA228_ADCRANGE_NBIT = 4
-
-#############################################################
-# INA228 ADC Mode
-# Description: The user can set the MODE bits for continuous or
-# triggered mode on bus voltage, shunt voltage or temperature measurement.
-#
-# Values:
-# 0x0h = Shutdown
-# 0x1h = Triggered bus voltage, single shot
-# 0x2h = Triggered shunt voltage, single shot
-# 0x3h = Triggered shunt voltage and bus voltage, single shot
-# 0x4h = Triggered temperature, single shot
-# 0x5h = Triggered temperature and bus voltage, single shot
-# 0x6h = Triggered temperature and shunt voltage, single shot
-# 0x7h = Triggered bus voltage, shunt voltage and temperature, single shot
-# 0x8h = Shutdown
-# 0x9h = Continuous bus voltage only
-# 0xAh = Continuous shunt voltage only
-# 0xBh = Continuous shunt and bus voltage
-# 0xCh = Continuous temperature only
-# 0xDh = Continuous bus voltage and temperature
-# 0xEh = Continuous temperature and shunt voltage
-# 0xFh = Continuous bus voltage, shunt voltage and temperature (default)
-#############################################################
-INA228_ADC_MODE = 0xB
-INA228_ADC_MODE_NBIT = 12
-
-#############################################################
-# INA228 ADC conversion time of bus voltage measurement.
-# Description: Sets the conversion time of the bus voltage measurement
-#
-# Values:
-# 0x00h = 50 μs
-# 0x01h = 84 μs
-# 0x02h = 150 μs
-# 0x03h = 280 μs
-# 0x04h = 540 μs
-# 0x05h = 1052 μs
-# 0x06h = 2074 μs
-# 0x07h = 4120 μs
-#############################################################
-INA228_VBUS_CONV_TIME = 0x05
-INA228_VBUS_CONV_TIME_NBIT = 0x09
-
-#############################################################
-# INA228 ADC conversion time of shunt voltage measurement.
-# Description: Sets the conversion time of the shunt voltage measurement
-#
-# Values:
-# 0x00h = 50 μs
-# 0x01h = 84 μs
-# 0x02h = 150 μs
-# 0x03h = 280 μs
-# 0x04h = 540 μs
-# 0x05h = 1052 μs
-# 0x06h = 2074 μs
-# 0x07h = 4120 μs
-#############################################################
-INA228_VSHCT_CONV_TIME = 0x05
-INA228_VSHCT_CONV_TIME_NBIT = 0x06
-
-#############################################################
-# INA228 ADC conversion time of temperatrure measurement.
-# Description: Sets the conversion time of the temperature measurement
-#
-# Values:
-# 0x00h = 50 μs
-# 0x01h = 84 μs
-# 0x02h = 150 μs
-# 0x03h = 280 μs
-# 0x04h = 540 μs
-# 0x05h = 1052 μs
-# 0x06h = 2074 μs
-# 0x07h = 4120 μs
-#############################################################
-INA228_VTCT_CONV_TIME = 0x05
-INA228_VTCT_CONV_TIME_NBIT = 0x03
-
-
-#############################################################
-# INA228 ADC sample averaging count.
-#
-# Values:
-# 0x0h = 1
-# 0x1h = 4
-# 0x2h = 16
-# 0x3h = 64
-# 0x4h = 128
-# 0x5h = 256
-# 0x6h = 512
-# 0x7h = 1024
-#############################################################
-INA228_ADC_AVG = 3
-INA228_AVG_NBIT = 0
-
+from .constants import Constants
 
 class Alert(Enum):
     """INA228 ADC alerts signal"""
@@ -208,7 +69,7 @@ class INA228:
         DEVICE_ID       = 0x3F
 
 
-    def __init__(self, busnum = INA228_DEFAULT_PORT, address = INA228_DEFAULT_ADDRESS, shunt_ohms = INA228_DEFAULT_SHUNT_OHMS, tempco = INA228_DEFAULT_SHUNT_TEMPCO_VALUE, stub_regmap = None):
+    def __init__(self, busnum = Constants.DEFAULT_PORT, address = Constants.DEFAULT_ADDRESS, shunt_ohms = Constants.DEFAULT_SHUNT_OHMS, tempco = Constants.DEFAULT_SHUNT_TEMPCO_VALUE, stub_regmap = None):
         """Create INA228 instance.
 
         Args:
@@ -287,7 +148,7 @@ class INA228:
 
     def __get_current_lsb(self):
 
-        if(INA228_ADCRANGE == 0):
+        if(Constants.ADCRANGE == 0):
             adc_max_voltage = 163.84e-3   # Table 1 in datasheet
         else:
             adc_max_voltage = 40.96e-3   # Table 1 in datasheet
@@ -299,7 +160,7 @@ class INA228:
 
     def __get_shunt_conv_factor(self):
 
-        if(INA228_ADCRANGE == 1):
+        if(Constants.ADCRANGE == 1):
             conversion_factor = 312.5e-9   # Table 1 in datasheet
         else:
             conversion_factor = 78.125e-9   # Table 1 in datasheet
@@ -322,7 +183,7 @@ class INA228:
 
         config = self.__read_register16(self.Register.CONFIG)
 
-        config = config | (self._conversion_delay << INA228_CONVDLY_NBIT) | (self._temp_comp << INA228_TEMPCOMP_NBIT) | (self._adcrange << INA228_ADCRANGE_NBIT)
+        config = config | (self._conversion_delay << Constants.CONVDLY_NBIT) | (self._temp_comp << Constants.TEMPCOMP_NBIT) | (self._adcrange << Constants.ADCRANGE_NBIT)
 
         self.__write_register16(self.Register.CONFIG, config)
 
@@ -333,7 +194,7 @@ class INA228:
 
         config = self.__read_register16(self.Register.ADC_CONFIG)
 
-        config = config | (self._adc_mode << INA228_ADC_MODE_NBIT) | (self._vbus_conv_time << INA228_VBUS_CONV_TIME_NBIT ) | (self._vshct_conv_time << INA228_VSHCT_CONV_TIME_NBIT) | (self._vtct_conv_time << INA228_VTCT_CONV_TIME_NBIT) | (self._adc_avg << INA228_AVG_NBIT)
+        config = config | (self._adc_mode << Constants.ADC_MODE_NBIT) | (self._vbus_conv_time << Constants.VBUS_CONV_TIME_NBIT ) | (self._vshct_conv_time << Constants.VSHCT_CONV_TIME_NBIT) | (self._vtct_conv_time << Constants.VTCT_CONV_TIME_NBIT) | (self._adc_avg << Constants.AVG_NBIT)
 
         self.__write_register16(self.Register.ADC_CONFIG, config)
 
@@ -362,7 +223,7 @@ class INA228:
 
         config = self.__read_register16(self.Register.CONFIG)
 
-        data = 1 << INA228_RST_NBIT
+        data = 1 << Constants.RST_NBIT
 
         config = config | data
 
@@ -381,14 +242,14 @@ class INA228:
 
         config = self.__read_register16(self.Register.CONFIG)
 
-        data = 1 << INA228_RSTACC_NBIT
+        data = 1 << Constants.RSTACC_NBIT
 
         config = config | data
 
         self.__write_register16(self.Register.CONFIG, config)
 
 
-    def configure(self, conversion_delay = INA228_CONVERSION_DELAY, temp_comp = INA228_TEMP_COMP, adcrange = INA228_ADCRANGE, adc_mode = INA228_ADC_MODE, vbus_conv_time = INA228_VBUS_CONV_TIME, vshct_conv_time = INA228_VSHCT_CONV_TIME, vtct_conv_time = INA228_VTCT_CONV_TIME, adc_avg = INA228_ADC_AVG):
+    def configure(self, conversion_delay = Constants.CONVERSION_DELAY, temp_comp = Constants.TEMP_COMP, adcrange = Constants.ADCRANGE, adc_mode = Constants.ADC_MODE, vbus_conv_time = Constants.VBUS_CONV_TIME, vshct_conv_time = Constants.VSHCT_CONV_TIME, vtct_conv_time = Constants.VTCT_CONV_TIME, adc_avg = Constants.ADC_AVG):
         """Performs initial INA228 configuration.
         Always call this prior to get any data from INA228.
         See detailed description of arguments in Tables 7 and 8 of the datasheet.
