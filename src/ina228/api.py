@@ -319,14 +319,23 @@ class INA228:
         return current_lsb
 
 
-    def get_shunt_conv_factor(self):
+    def __get_shunt_conv_factor(self):
 
-        if(INA228_ADCRANGE == 0):
-            shunt_conv_factor = 1.25e-6
+        if(INA228_ADCRANGE == 1):
+            conversion_factor = 312.5e-9   # Table 1 in datasheet
         else:
-            shunt_conv_factor = 5.0e-6
+            conversion_factor = 78.125e-9   # Table 1 in datasheet
 
-        return shunt_conv_factor
+        return conversion_factor
+
+    def __get_vbus_conv_factor(self):
+
+        return 195.3125e-6   # Table 1 in datasheet
+
+
+    def __get_temp_conv_factor(self):
+
+        return 7.8125e-3   # Table 1 in datasheet
 
 
     def reset_all(self):
@@ -435,14 +444,9 @@ class INA228:
             Voltage in volts.
         """
 
-        if(INA228_ADCRANGE == 1):
-            conversion_factor = 312.5e-9
-        else:
-            conversion_factor = 78.125e-9
-
         raw = self.read_register24(self.__INA228_VSHUNT)
 
-        vshunt = (self.__convert2comp2float(raw >> 4, 20, conversion_factor)) * 10   # Table 1 in datasheet, for *10 see Known Bugs
+        vshunt = (self.__convert2comp2float(raw >> 4, 20, self.__get_shunt_conv_factor())) * 10   # Table 11 in datasheet, for *10 see Known Bugs
 
         return vshunt
 
@@ -457,11 +461,9 @@ class INA228:
             Voltage in volts.
         """
 
-        conversion_factor = 195.3125e-6
-
         raw = self.read_register24(self.__INA228_VBUS)
 
-        vbus = self.__convert2comp2float(raw >> 4, 20, conversion_factor)   # Table 1 in datasheet
+        vbus = self.__convert2comp2float(raw >> 4, 20, self.__get_vbus_conv_factor())   # Table 12 in datasheet
 
         return vbus
 
@@ -476,11 +478,9 @@ class INA228:
             Temperature in Celsius.
         """
 
-        conversion_factor = 7.8125e-3
-
         raw = self.read_register16(self.__INA228_DIETEMP)
 
-        temp = self.__convert2comp2float(raw, 16, conversion_factor)   # Table 1 in datasheet
+        temp = self.__convert2comp2float(raw, 16, self.__get_temp_conv_factor())   # Table 13 in datasheet
 
         return temp
 
@@ -642,7 +642,7 @@ class INA228:
             Nothing.
         """
 
-        data = __convertfloat22comp(value_temp * self._shunt_ohms, 16, self.get_shunt_conv_factor())
+        data = __convertfloat22comp(value, 16, self.__get_shunt_conv_factor())   # Table 19 in datasheet
 
         self.read_register16(self.__INA228_SOVL)
 
@@ -659,7 +659,7 @@ class INA228:
             Nothing.
         """
 
-        data = __convertfloat22comp(value_temp * self._shunt_ohms, 16, self.get_shunt_conv_factor())
+        data = __convertfloat22comp(value, 16, self.__get_shunt_conv_factor())   # Table 20 in datasheet
 
         self.read_register16(self.__INA228_SUVL)
 
@@ -676,7 +676,7 @@ class INA228:
             Nothing.
         """
 
-        data = value / (16 * 195.3125e-6)
+        data = value / self.__get_vbus_conv_factor()   # Table 21 in datasheet
 
         self.read_register16(self.__INA228_BOVL)
 
@@ -693,43 +693,41 @@ class INA228:
             Nothing.
         """
 
-        data = value / (16 * 195.3125e-6)
+        data = value / self.__get_vbus_conv_factor()   # Table 22 in datasheet
 
         self.read_register16(self.__INA228_BUVL)
 
         self.write_register16(self.__INA228_BUVL, data)
 
 
-    def set_temp_limit(self, value, consta):
+    def set_temp_limit(self, value):
         """Set high alert threshold of the die temperature.
 
         Args:
             value: Limit in Celsius.
-            consta: Unknown, to be removed in future revisions.
 
         Returns:
             Nothing.
         """
 
-        data = value / (16 * consta)
+        data = __convertfloat22comp(value, 16, self.__get_temp_conv_factor())   # Table 23 in datasheet
 
         self.read_register16(self.__INA228_TEMP_LIMIT)
 
         self.write_register16(self.__INA228_TEMP_LIMIT, data)
 
 
-    def set_power_overlimit(self, value, consta):
+    def set_power_overlimit(self, value):
         """Set high alert threshold of the load power.
 
         Args:
             value: Limit in watts.
-            consta: Unknown, to be removed in future revisions.
 
         Returns:
             Nothing.
         """
 
-        data = value / (16 * consta)
+        data = value / (3.2 * self.get_current_lsb())   # Equation (4) and Table 24 in datasheet
 
         self.read_register16(self.__INA228_PWR_LIMIT)
 
