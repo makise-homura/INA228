@@ -19,7 +19,7 @@ So just `pip install ina228` should be enough, if you're not up to contributing.
     print('Power: ', ina228.get_power())
 ```
 
-To use the module, just import `INA228` class from there.
+To use the module, just import `INA228` class from there, and `Alert` if needed.
 You probably don't need anything else.
 
 Create the instance of `INA228` class, specifying the device location on SMBus.
@@ -45,7 +45,9 @@ Then you may use every method you want to get measurement results and do other t
 * `get_power()`: Read calculated power (a product of voltage and current).
 * `get_energy()`: Read integral energy (a product of power and time since last reset).
 * `get_charge()`: Read charge spent (a product of current and time since last reset).
-* `get_diag_alerts()`: Test if specific alert is active.
+* `get_diag_alerts()`: Read alerts.
+* `alert_message()`: Get text message for specific alert.
+* `set_alert_bits()`: Set alert configuration.
 * `set_shunt_overvoltage()`: Set high alert threshold of the shunt resistor voltage.
 * `set_shunt_undervoltage()`: Set low alert threshold of the shunt resistor voltage.
 * `set_bus_overvoltage()`: Set high alert threshold of the V+/V- terminals voltage.
@@ -80,7 +82,6 @@ See [corresponding README](tests/README.md).
 * Value of VSHUNT is needed to be multiplied by 10 to get correct value.
 
 * All trash should be put out to constants file.
-* Alert register read should be redone in a more correct way.
 
 ## Credits
 

@@ -16,6 +16,7 @@ Need to fix:
 """
 
 import time
+from enum import Enum
 
 from smbus2 import SMBus
 
@@ -162,24 +163,23 @@ INA228_ADC_AVG = 3
 INA228_AVG_NBIT = 0
 
 
-#############################################################
-# INA228 ADC alerts signal
-#############################################################
-INA228_ALERT_MEMSTAT = 0
-INA228_ALERT_CNVRF = 1
-INA228_ALERT_POL = 2
-INA228_ALERT_BUSUL = 3
-INA228_ALERT_BUSOL = 4
-INA228_ALERT_SHNTUL = 5
-INA228_ALERT_SHNTOL = 6
-INA228_ALERT_TMPOL = 7
-INA228_ALERT_MATHOF = 9
-INA228_ALERT_CHARGEOF = 10
-INA228_ALERT_ENERGYOF = 11
-INA228_ALERT_APOL = 12
-INA228_ALERT_SLOWALERT = 13
-INA228_ALERT_CNVR = 14
-INA228_ALERT_ALATCH = 15
+class Alert(Enum):
+    """INA228 ADC alerts signal"""
+    MEMSTAT = 0
+    CNVRF = 1
+    POL = 2
+    BUSUL = 3
+    BUSOL = 4
+    SHNTUL = 5
+    SHNTOL = 6
+    TMPOL = 7
+    MATHOF = 9
+    CHARGEOF = 10
+    ENERGYOF = 11
+    APOL = 12
+    SLOWALERT = 13
+    CNVR = 14
+    ALATCH = 15
 
 
 class INA228:
@@ -529,83 +529,67 @@ class INA228:
         return charge
 
 
-    def get_diag_alerts(self, alert):
-        """Test if specific alert is active.
+    def get_diag_alerts(self):
+        """Read alerts.
 
         Args:
-            alert: Alert to read (any of INA228_ALERT_* constants).
+            None.
 
         Returns:
-            String representation of specific alert, or empty string if nothing to tell (e.g. no chosen alert).
+            List of Alert constants matching all active alert bits in alert register.
         """
 
         raw = self.__read_register16(self.__INA228_DIAG_ALRT)
 
-        if(alert == INA228_ALERT_ALATCH):
-            if (raw & 0x1) == 0x0:
-                return 'MEMSTAT: Checksum error is detected in the device trim memory space'
+        alerts = []
 
-        elif(alert == INA228_ALERT_CNVRF):
-            if (raw & 0x2) == 0x1:
-                return 'CNVRF: Conversion is completed'
+        for alert in Alert:
+            if raw & (1 << alert.value):
+                alerts.append(alert)
 
-        elif(alert == INA228_ALERT_BUSUL):
-            if (raw & 0x4) == 0x1:
-                return 'BUSUL: Bus voltage measurement falls below the threshold limit in the bus under-limit register'
+        return alerts
 
-        elif(alert == INA228_ALERT_BUSOL):
-            if (raw & 0x8) == 0x1:
-                return 'BUSOL: Bus voltage measurement exceeds the threshold limit in the bus over-limit register'
+    def alert_message(self, alert):
+        """Get text message for specific alert.
 
-        elif(alert == INA228_ALERT_SHNTUL):
-            if (raw & 0x10) == 0x1:
-                return 'SHNTUL: Shunt voltage measurement falls below the threshold limit in the shunt under-limit register'
+        Args:
+            alert: Alert constant to explain.
 
-        elif(alert == INA228_ALERT_SHNTOL):
-            if (raw & 0x40) == 0x1:
-                return 'SHNTOL: Shunt voltage measurement exceeds the threshold limit in the shunt over-limit register'
+        Returns:
+            String representation of specific alert.
+        """
 
-        elif(alert == INA228_ALERT_TMPOL):
-            if (raw & 0x80) == 0x1:
-                return 'TMPOL: Temperature measurement exceeds the threshold limit in the temperature over-limit register'
+        alert_strings = {
+            Alert.MEMSTAT:  'MEMSTAT: Checksum error is detected in the device trim memory space',
+            Alert.CNVRF:    'CNVRF: Conversion is completed',
+            Alert.BUSUL:    'BUSUL: Bus voltage measurement falls below the threshold limit in the bus under-limit register',
+            Alert.BUSOL:    'BUSOL: Bus voltage measurement exceeds the threshold limit in the bus over-limit register',
+            Alert.SHNTUL:   'SHNTUL: Shunt voltage measurement falls below the threshold limit in the shunt under-limit register',
+            Alert.SHNTOL:   'SHNTOL: Shunt voltage measurement exceeds the threshold limit in the shunt over-limit register',
+            Alert.TMPOL:    'TMPOL: Temperature measurement exceeds the threshold limit in the temperature over-limit register',
+            Alert.MATHOF:   'MATHOF: Arithmetic operation resulted in an overflow error',
+            Alert.CHARGEOF: 'CHARGEOF: 40 bit CHARGE register has overflowed',
+            Alert.ENERGYOF: 'ENERGYOF: 40 bit ENERGY register has overflowed',
+        }
 
-        elif(alert == INA228_ALERT_MATHOF):
-            if (raw & 0x100) == 0x1:
-                return 'MATHOF: Arithmetic operation resulted in an overflow error'
+        return alert_strings[alert]
 
-        elif(alert == INA228_ALERT_CHARGEOF):
-            if (raw & 0x200) == 0x1:
-                return 'CHARGEOF: 40 bit CHARGE register has overflowed'
+    def set_alert_bits(self, *args):
+        """Set alert configuration.
 
-        elif(alert == INA228_ALERT_ENERGYOF):
-            if (raw & 0x400) == 0x1:
-                return 'ENERGYOF: 40 bit ENERGY register has overflowed'
+        Args:
+            Alert config constants to set in alert register (Alert.APOL, Alert.SLOWALERT, Alert.CNVR, Alert.ALATCH). All other will be reset.
 
-        elif(alert == INA228_ALERT_APOL):
-            if (raw & 0x800) == 0x1:
-                return 'APOL: Alert pin polarity inverted (active-high, open-drain)'
-            else:
-                return 'APOL: Alert pin polarity normale (active-low, open-drain)'
+        Returns:
+            None.
+        """
 
-        elif(alert == INA228_ALERT_SLOWALERT):
-            if (raw & 0x2000) == 0x1:
-                return 'SLOWALERT: ALERT function is asserted on the completed averaged value. ALERT comparison on averaged value'
-            else:
-                return 'SLOWALERT: ALERT comparison on non-averaged (ADC) value'
+        data = self.__read_register16(self.__INA228_DIAG_ALRT) & 0x0FFF
 
-        elif(alert == INA228_ALERT_CNVR):
-            if (raw & 0x4000) == 0x1:
-                return 'CNVR: Alert pin to be asserted when the Conversion Ready Flag (bit 1) is asserted, indicating that a conversion cycle has completed. Enables conversion ready flag on ALERT pin'
-            else:
-                return 'CNVR: Disable conversion ready flag on ALERT pin'
+        for alert in args:
+            data |= (1 << alert.value)
 
-        elif(alert == INA228_ALERT_ALATCH):
-            if (raw & 0x8000) == 0x1:
-                return 'ALATCH: Latched'
-            else:
-                return 'ALATCH: Transparent'
-
-        return ''
+        self.__write_register16(self.__INA228_BOVL, data)
 
 
     def set_shunt_overvoltage(self, value):
