@@ -21,7 +21,7 @@ def test_main():
     """
     from sys import argv
     from time import sleep
-    from ina228 import INA228
+    from ina228 import INA228, Alert
     from datetime import datetime, UTC
 
     from stub_regmap import stub_regmap
@@ -38,6 +38,7 @@ def test_main():
         sleep_sec = 0.1
 
     ina228.configure()
+    ina228.set_alert_bits(Alert.ALATCH)
 
     i = 0
 
@@ -63,6 +64,10 @@ def test_main():
         if i < iterations:
             i = i +1
         else:
+            print('---------------------------------------')
+            print('Alerts list in the end:')
+            for alert in ina228.get_diag_alerts():
+                print(f'  {ina228.alert_message(alert)}')
             break
 
 if __name__ =="__main__":
