@@ -537,7 +537,7 @@ class INA228:
 
         raw = self.read_register40(self.__INA228_CHARGE)
 
-        charge = self.__convert2comp2float(raw >> 4, 20, self.get_current_lsb())
+        charge = self.__convert2comp2float(raw, 40, self.get_current_lsb())
 
         return charge
 
