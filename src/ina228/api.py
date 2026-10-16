@@ -22,10 +22,10 @@ from smbus2 import SMBus
 from .testing import mock_SMBus
 
 # Default parameters
-INA228_PORT = 1
-INA228_ADDRESS = 0x45
-INA228_SHUNT_OHMS = 0.025
-INA228_SHUNT_TEMPCO_VALUE = 0
+INA228_DEFAULT_PORT = 1
+INA228_DEFAULT_ADDRESS = 0x45
+INA228_DEFAULT_SHUNT_OHMS = 0.025
+INA228_DEFAULT_SHUNT_TEMPCO_VALUE = 0
 
 #############################################################
 # INA228 Reset bytes for CONFIG [15] / [14]
@@ -206,7 +206,7 @@ class INA228:
     __INA228_MANUFACTURER_ID    = 0x3E
     __INA228_DEVICE_ID          = 0x3F
 
-    def __init__(self, busnum = INA228_PORT, address = INA228_ADDRESS, shunt_ohms = INA228_SHUNT_OHMS, tempco = INA228_SHUNT_TEMPCO_VALUE, stub_regmap = None):
+    def __init__(self, busnum = INA228_DEFAULT_PORT, address = INA228_DEFAULT_ADDRESS, shunt_ohms = INA228_DEFAULT_SHUNT_OHMS, tempco = INA228_DEFAULT_SHUNT_TEMPCO_VALUE, stub_regmap = None):
         """Create INA228 instance.
 
         Args:
