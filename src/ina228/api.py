@@ -312,6 +312,40 @@ class INA228:
         return 7.8125e-3   # Table 1 in datasheet
 
 
+    def __set_config(self):
+
+        # Write settings to CONFIG register
+
+        config = self.__read_register16(self. __INA228_CONFIG)
+
+        config = config | (INA228_CONVERSION_DELAY << INA228_CONVDLY_NBIT) | (INA228_TEMP_COMP << INA228_TEMPCOMP_NBIT) | (INA228_ADCRANGE << INA228_ADCRANGE_NBIT)
+
+        self.__write_register16(self.__INA228_CONFIG, config)
+
+
+    def __set_adc_config(self):
+
+        # Write settings to ADC CONFIG register
+
+        config = self.__read_register16(self. __INA228_ADC_CONFIG)
+
+        config = config | (INA228_ADC_MODE << INA228_ADC_MODE_NBIT) | (INA228_VBUS_CONV_TIME << INA228_VBUS_CONV_TIME_NBIT ) | (INA228_VSHCT_CONV_TIME << INA228_VSHCT_CONV_TIME_NBIT) | (INA228_VTCT_CONV_TIME << INA228_VTCT_CONV_TIME_NBIT) | (INA228_ADC_AVG << INA228_AVG_NBIT)
+
+        self.__write_register16(self.__INA228_ADC_CONFIG, config)
+
+
+    def __shunt_calib(self):
+
+        calib_value = int(13107.2e6 * self.__get_current_lsb() * self._shunt_ohms)   # Equation (1) in datasheet
+
+        self.__write_register16(self.__INA228_SHUNT_CAL, calib_value)
+
+
+    def __shunt_tempco(self):
+
+        self.__write_register16(self.__INA228_SHUNT_TEMPCO, INA228_SHUNT_TEMPCO_VALUE)
+
+
     def reset_all(self):
         """Perform the power-on reset of the chip.
 
@@ -348,40 +382,6 @@ class INA228:
         config = config | data
 
         self.__write_register16(self.__INA228_CONFIG, config)
-
-
-    def __set_config(self):
-
-        # Write settings to CONFIG register
-
-        config = self.__read_register16(self. __INA228_CONFIG)
-
-        config = config | (INA228_CONVERSION_DELAY << INA228_CONVDLY_NBIT) | (INA228_TEMP_COMP << INA228_TEMPCOMP_NBIT) | (INA228_ADCRANGE << INA228_ADCRANGE_NBIT)
-
-        self.__write_register16(self.__INA228_CONFIG, config)
-
-
-    def __set_adc_config(self):
-
-        # Write settings to ADC CONFIG register
-
-        config = self.__read_register16(self. __INA228_ADC_CONFIG)
-
-        config = config | (INA228_ADC_MODE << INA228_ADC_MODE_NBIT) | (INA228_VBUS_CONV_TIME << INA228_VBUS_CONV_TIME_NBIT ) | (INA228_VSHCT_CONV_TIME << INA228_VSHCT_CONV_TIME_NBIT) | (INA228_VTCT_CONV_TIME << INA228_VTCT_CONV_TIME_NBIT) | (INA228_ADC_AVG << INA228_AVG_NBIT)
-
-        self.__write_register16(self.__INA228_ADC_CONFIG, config)
-
-
-    def __shunt_calib(self):
-
-        calib_value = int(13107.2e6 * self.__get_current_lsb() * self._shunt_ohms)   # Equation (1) in datasheet
-
-        self.__write_register16(self.__INA228_SHUNT_CAL, calib_value)
-
-
-    def __shunt_tempco(self):
-
-        self.__write_register16(self.__INA228_SHUNT_TEMPCO, INA228_SHUNT_TEMPCO_VALUE)
 
 
     def configure(self):
