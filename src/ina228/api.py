@@ -299,9 +299,9 @@ class INA228:
     def get_current_lsb(self):
 
         if(INA228_ADCRANGE == 0):
-            adc_max_voltage = 163.84e-3
+            adc_max_voltage = 163.84e-3   # Table 1 in datasheet
         else:
-            adc_max_voltage = 40.96e-3
+            adc_max_voltage = 40.96e-3   # Table 1 in datasheet
 
         current_lsb = (adc_max_voltage / self._shunt_ohms) / 524288   # Equation (2) in datasheet
 
