@@ -299,11 +299,11 @@ class INA228:
     def get_current_lsb(self):
 
         if(INA228_ADCRANGE == 0):
-            temp = 163.84e-3
+            adc_max_voltage = 163.84e-3
         else:
-            temp = 40.96e-3
+            adc_max_voltage = 40.96e-3
 
-        current_lsb = (temp / self._shunt_ohms) / 524288
+        current_lsb = (adc_max_voltage / self._shunt_ohms) / 524288   # Equation (2) in datasheet
 
         return current_lsb
 
@@ -380,7 +380,7 @@ class INA228:
 
     def shunt_calib(self):
 
-        calib_value = int(13107.2e6 * self.get_current_lsb() * self._shunt_ohms)
+        calib_value = int(13107.2e6 * self.get_current_lsb() * self._shunt_ohms)   # Equation (1) in datasheet
 
         self.write_register16(self.__INA228_SHUNT_CAL, calib_value)
 
@@ -423,13 +423,13 @@ class INA228:
         """
 
         if(INA228_ADCRANGE == 1):
-            conversion_factor = 312.5e-9                # nV/LSB
+            conversion_factor = 312.5e-9
         else:
-            conversion_factor = 78.125e-9               # nV/LSB
+            conversion_factor = 78.125e-9
 
         raw = self.read_register24(self.__INA228_VSHUNT)
 
-        vshunt = (self.__convert2comp2float(raw >> 4, 20, conversion_factor)) * 10                  # Find and fix *10
+        vshunt = (self.__convert2comp2float(raw >> 4, 20, conversion_factor)) * 10   # Table 1 in datasheet, for *10 see Known Bugs
 
         return vshunt
 
@@ -444,11 +444,11 @@ class INA228:
             Voltage in volts.
         """
 
-        conversion_factor = 195.3125e-6                 # uV/LSB
+        conversion_factor = 195.3125e-6
 
         raw = self.read_register24(self.__INA228_VBUS)
 
-        vbus = self.__convert2comp2float(raw >> 4, 20, conversion_factor)
+        vbus = self.__convert2comp2float(raw >> 4, 20, conversion_factor)   # Table 1 in datasheet
 
         return vbus
 
@@ -467,7 +467,7 @@ class INA228:
 
         raw = self.read_register16(self.__INA228_DIETEMP)
 
-        temp = self.__convert2comp2float(raw, 16, conversion_factor)
+        temp = self.__convert2comp2float(raw, 16, conversion_factor)   # Table 1 in datasheet
 
         return temp
 
@@ -484,7 +484,7 @@ class INA228:
 
         raw = self.read_register24(self.__INA228_CURRENT)
 
-        current = self.__convert2comp2float(raw >> 4, 20, self.get_current_lsb())
+        current = self.__convert2comp2float(raw >> 4, 20, self.get_current_lsb())   # Equation (3) in datasheet
 
         return current
 
@@ -499,11 +499,9 @@ class INA228:
             Power in watts.
         """
 
-        current_lsb = self.get_current_lsb()
-
         raw = self.read_register24(self.__INA228_POWER)
 
-        power = (3.2 * raw * current_lsb)
+        power = raw * 3.2 * self.get_current_lsb()   # Equation (4) in datasheet
 
         return power
 
@@ -520,7 +518,7 @@ class INA228:
 
         raw = self.read_register40(self.__INA228_ENERGY)
 
-        energy = raw * 3.2 * 16 * self.get_current_lsb()
+        energy = raw * 3.2 * 16 * self.get_current_lsb()   # Equation (5) in datasheet
 
         return energy
 
@@ -537,7 +535,7 @@ class INA228:
 
         raw = self.read_register40(self.__INA228_CHARGE)
 
-        charge = self.__convert2comp2float(raw, 40, self.get_current_lsb())
+        charge = self.__convert2comp2float(raw, 40, self.get_current_lsb())   # Equation (6) in datasheet
 
         return charge
 
