@@ -407,7 +407,9 @@ class INA228:
         self.set_adc_config()
 
         self.shunt_calib()
-        self.shunt_tempco()
+
+        if INA228_TEMP_COMP:
+            self.shunt_tempco()
 
         time.sleep(0.1)
 
