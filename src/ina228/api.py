@@ -253,58 +253,32 @@ class INA228:
         return twocompdata & ((1 << nrofbit) - 1)
 
 
-    def __binary_as_string(self, register_value):
-
-        return bin(register_value)[2:].zfill(16)
-
-
-    def __to_bytes(self, register_value):
-
-        return [(register_value >> 8) & 0xFF, register_value & 0xFF]
-
-
     def read_register40(self, register):
 
         result = self._i2c.read_i2c_block_data(self._address, register, 5)
 
-        register_value = ((result[0] << 32) & 0xFF00000000) | ((result[1] << 24) & 0xFF000000) | ((result[2] << 16) & 0xFF0000) | ((result[3] << 8) & 0xFF00) | (result[4] & 0xFF)
-
-        #print("Read register 16 bits - 0x%02X: 0x%05X = 0b%s" %(register, register_value, self.__binary_as_string(register_value)))
-
-        return register_value
+        return int.from_bytes(result,'big')
 
 
     def read_register24(self, register):
 
         result = self._i2c.read_i2c_block_data(self._address, register, 3)
 
-        register_value = ((result[0] << 16) & 0xFF0000) | ((result[1] << 8) & 0xFF00) | (result[2] & 0xFF)
-
-        #print("Read register 24 bits - 0x%02X: 0x%05X = 0b%s" %(register, register_value, self.__binary_as_string(register_value)))
-
-        return register_value
+        return int.from_bytes(result,'big')
 
 
     def read_register16(self, register):
 
         result = self._i2c.read_i2c_block_data(self._address, register, 2)
 
-        register_value = ((result[0] << 8) & 0xFF00) | (result[1] & 0xFF)
-
-        #print("Read register 16 bits - 0x%02X: 0x%04X = 0b%s" %(register, register_value, self.__binary_as_string(register_value)))
-
-        return register_value
+        return int.from_bytes(result,'big')
 
 
     def write_register16(self, register, register_value):
 
-        register_bytes = self.__to_bytes(register_value)
-
-        #print("Write register 16 bits 0x%02X: 0x%02X 0b%s" % (register, register_value, self.__binary_as_string(register_value)))
+        register_bytes = list(register_value.to_bytes(2,'big'))
 
         self._i2c.write_i2c_block_data(self._address, register, register_bytes)
-
-        # self._i2c.write_word_data(self._address, register, register_value)
 
 
     def get_current_lsb(self):
