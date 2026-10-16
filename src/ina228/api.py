@@ -21,7 +21,7 @@ from smbus2 import SMBus
 
 from .testing import mock_SMBus
 
-# INA228 Address
+# Default parameters
 INA228_PORT = 1
 INA228_ADDRESS = 0x45
 INA228_SHUNT_OHMS = 0.025
@@ -206,13 +206,14 @@ class INA228:
     __INA228_MANUFACTURER_ID    = 0x3E
     __INA228_DEVICE_ID          = 0x3F
 
-    def __init__(self, busnum = INA228_PORT, address = INA228_ADDRESS, shunt_ohms = INA228_SHUNT_OHMS, stub_regmap = None):
+    def __init__(self, busnum = INA228_PORT, address = INA228_ADDRESS, shunt_ohms = INA228_SHUNT_OHMS, tempco = INA228_SHUNT_TEMPCO_VALUE, stub_regmap = None):
         """Create INA228 instance.
 
         Args:
             busnum: SMBus bus number INA228 connected to.
             address: SMBus slave address of INA228.
             shunt_ohms: Shunt value for current measurements.
+            tempco: Shunt temperature correction value (See part 7.3.6 of the datasheet).
             stub_regmap: Used in tests to emulate real INA228.
 
         Returns:
@@ -226,6 +227,7 @@ class INA228:
         self._i2c = mock_SMBus(stub_regmap) if stub_regmap else SMBus(busnum)
         self._shunt_ohms = shunt_ohms
         self._stub_regmap = stub_regmap
+        self._tempco = tempco
 
     def __convert2comp2float(self, twocompdata, nrofbit, factor):
 
@@ -343,7 +345,7 @@ class INA228:
 
     def __shunt_tempco(self):
 
-        self.__write_register16(self.__INA228_SHUNT_TEMPCO, INA228_SHUNT_TEMPCO_VALUE)
+        self.__write_register16(self.__INA228_SHUNT_TEMPCO, self._tempco)
 
 
     def reset_all(self):

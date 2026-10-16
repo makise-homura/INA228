@@ -23,13 +23,16 @@ To use the module, just import `INA228` class from there.
 You probably don't need anything else.
 
 Create the instance of `INA228` class, specifying the device location on SMBus.
+By default, it uses INA228 at bus 1 slave address 0x45, with 0.025 Ohm shunt
+and disabled temperature correction; you may set your own values while creating
+the instance.
 
-Then initialize it by calling `configure()` method, and now it is ready to work.
+Then, initialize it by calling `configure()` method, and now it is ready to work.
 
 After configuring, don't forget to leave device some time for the first measurement.
 1 second should be enough.
 
-Then you may use every method you want to get measurement results.
+Then you may use every method you want to get measurement results and do other tasks.
 
 ## Useful methods
 
