@@ -229,17 +229,28 @@ class INA228:
 
     def __convert2comp2float(self, twocompdata, nrofbit, factor):
 
-        isnegative = 1
-        isnegative = (isnegative << (nrofbit - 1))
+        negative = (1 << (nrofbit - 1))
 
-        dietemp = twocompdata
+        value = twocompdata
 
-        if(dietemp > isnegative):
-            dietemp = (dietemp - (2*isnegative)) * factor
+        if(value > negative):
+            value = (value - (2*negative)) * factor
         else:
-            dietemp = (dietemp * factor)
+            value = value * factor
 
-        return dietemp
+        return value
+
+    def __convertfloat22comp(self, value, nrofbit, factor):
+
+        if (value >= 0):
+            twocompdata = int(value / factor)
+
+        else:
+            twocompdata = int(value * (-1) / factor)
+            twocompdata = ~twocompdata
+            twocompdata = twocompdata + 1
+
+        return twocompdata & ((1 << nrofbit) - 1)
 
 
     def __binary_as_string(self, register_value):
@@ -631,17 +642,7 @@ class INA228:
             Nothing.
         """
 
-        if (value >= 0):
-
-            data = (value * self._shunt_ohms) / self.get_shunt_conv_factor()
-
-        else:
-
-            value_temp = value * (-1);
-
-            data = (value_temp * self._shunt_ohms) / self.get_shunt_conv_factor()
-            data = ~data
-            data = data + 1
+        data = __convertfloat22comp(value_temp * self._shunt_ohms, 16, self.get_shunt_conv_factor())
 
         self.read_register16(self.__INA228_SOVL)
 
@@ -658,17 +659,7 @@ class INA228:
             Nothing.
         """
 
-        if (value >= 0):
-
-            data = (value * self._shunt_ohms) / self.get_shunt_conv_factor()
-
-        else:
-
-            value_temp = value * (-1);
-
-            data = (value_temp * self._shunt_ohms) / self.get_shunt_conv_factor()
-            data = ~data
-            data = data + 1
+        data = __convertfloat22comp(value_temp * self._shunt_ohms, 16, self.get_shunt_conv_factor())
 
         self.read_register16(self.__INA228_SUVL)
 
