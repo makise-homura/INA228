@@ -76,7 +76,6 @@ See [corresponding README](tests/README.md).
 
 * Value of VSHUNT is needed to be multiplied by 10 to get correct value.
 
-* Special methods not intended to be used by user should be made private.
 * All trash should be put out to constants file.
 * Alert register read should be redone in a more correct way.
 
