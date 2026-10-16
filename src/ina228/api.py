@@ -320,7 +320,7 @@ class INA228:
 
         config = self.__read_register16(self. __INA228_CONFIG)
 
-        config = config | (INA228_CONVERSION_DELAY << INA228_CONVDLY_NBIT) | (INA228_TEMP_COMP << INA228_TEMPCOMP_NBIT) | (INA228_ADCRANGE << INA228_ADCRANGE_NBIT)
+        config = config | (self._conversion_delay << INA228_CONVDLY_NBIT) | (self._temp_comp << INA228_TEMPCOMP_NBIT) | (self._adcrange << INA228_ADCRANGE_NBIT)
 
         self.__write_register16(self.__INA228_CONFIG, config)
 
@@ -331,7 +331,7 @@ class INA228:
 
         config = self.__read_register16(self. __INA228_ADC_CONFIG)
 
-        config = config | (INA228_ADC_MODE << INA228_ADC_MODE_NBIT) | (INA228_VBUS_CONV_TIME << INA228_VBUS_CONV_TIME_NBIT ) | (INA228_VSHCT_CONV_TIME << INA228_VSHCT_CONV_TIME_NBIT) | (INA228_VTCT_CONV_TIME << INA228_VTCT_CONV_TIME_NBIT) | (INA228_ADC_AVG << INA228_AVG_NBIT)
+        config = config | (self._adc_mode << INA228_ADC_MODE_NBIT) | (self._vbus_conv_time << INA228_VBUS_CONV_TIME_NBIT ) | (self._vshct_conv_time << INA228_VSHCT_CONV_TIME_NBIT) | (self._vtct_conv_time << INA228_VTCT_CONV_TIME_NBIT) | (self._adc_avg << INA228_AVG_NBIT)
 
         self.__write_register16(self.__INA228_ADC_CONFIG, config)
 
@@ -386,16 +386,33 @@ class INA228:
         self.__write_register16(self.__INA228_CONFIG, config)
 
 
-    def configure(self):
+    def configure(self, conversion_delay = INA228_CONVERSION_DELAY, temp_comp = INA228_TEMP_COMP, adcrange = INA228_ADCRANGE, adc_mode = INA228_ADC_MODE, vbus_conv_time = INA228_VBUS_CONV_TIME, vshct_conv_time = INA228_VSHCT_CONV_TIME, vtct_conv_time = INA228_VTCT_CONV_TIME, adc_avg = INA228_ADC_AVG):
         """Performs initial INA228 configuration.
         Always call this prior to get any data from INA228.
+        See detailed description of arguments in Tables 7 and 8 of the datasheet.
 
         Args:
-            None.
+            conversion_delay: Initial conversion delay.
+            temp_comp: Temperature compensation.
+            adcrange: ADC shunt full scale range selection.
+            adc_mode: ADC mode.
+            vbus_conv_time: ADC conversion time of bus voltage measurement.
+            vshct_conv_time: ADC conversion time of shunt voltage measurement.
+            vtct_conv_time: ADC conversion time of temperatrure measurement.
+            adc_avg: ADC sample averaging count.
 
         Returns:
             Nothing.
         """
+
+        self._conversion_delay = conversion_delay
+        self._temp_comp = temp_comp
+        self._adcrange = adcrange
+        self._adc_mode = adc_mode
+        self._vbus_conv_time = vbus_conv_time
+        self._vshct_conv_time = vshct_conv_time
+        self._vtct_conv_time = vtct_conv_time
+        self._adc_avg = adc_avg
 
         self.reset_all()
 
@@ -404,7 +421,7 @@ class INA228:
 
         self.__shunt_calib()
 
-        if INA228_TEMP_COMP:
+        if self._temp_comp:
             self.__shunt_tempco()
 
         time.sleep(0.1)
