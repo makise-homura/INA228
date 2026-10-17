@@ -36,7 +36,7 @@ Then you may use every method you want to get measurement results and do other t
 
 ## Useful methods
 
-* `reset_all()`: Perform the power-on reset of the chip.
+* `configure()`: Performs INA228 reset and initial configuration.
 * `reset_energy()`: Reset energy and charge counters.
 * `get_shunt_voltage()`: Read voltage on the shunt resistor.
 * `get_vbus_voltage()`: Read voltage on the V+/V- terminals.
