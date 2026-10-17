@@ -43,4 +43,4 @@ Issues = "https://github.com/makise-homura/INA228/issues/"
 
 [tool.pytest]
 minversion = "9.0"
-testpaths = ["tests/test.py"]
+testpaths = ["tests/test_measurements.py"]
