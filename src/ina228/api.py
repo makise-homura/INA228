@@ -211,15 +211,7 @@ class INA228:
         self.__write_register16(self.Register.SHUNT_TEMPCO, self._tempco)
 
 
-    def reset_all(self):
-        """Perform the power-on reset of the chip.
-
-        Args:
-            None.
-
-        Returns:
-            Nothing.
-        """
+    def __reset_all(self):
 
         config = self.__read_register16(self.Register.CONFIG)
 
@@ -250,7 +242,7 @@ class INA228:
 
 
     def configure(self, conversion_delay = Constants.CONVERSION_DELAY, temp_comp = Constants.TEMP_COMP, adcrange = Constants.ADCRANGE, adc_mode = Constants.ADC_MODE, vbus_conv_time = Constants.VBUS_CONV_TIME, vshct_conv_time = Constants.VSHCT_CONV_TIME, vtct_conv_time = Constants.VTCT_CONV_TIME, adc_avg = Constants.ADC_AVG):
-        """Performs initial INA228 configuration.
+        """Performs INA228 reset and initial configuration.
         Always call this prior to get any data from INA228.
         See detailed description of arguments in Tables 7 and 8 of the datasheet.
 
@@ -277,7 +269,7 @@ class INA228:
         self._vtct_conv_time = vtct_conv_time
         self._adc_avg = adc_avg
 
-        self.reset_all()
+        self.__reset_all()
 
         self.__set_config()
         self.__set_adc_config()
