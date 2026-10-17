@@ -18,7 +18,7 @@ Install the module you've built there:
 .venv/bin/pip install dist/ina228-*.whl --force-reinstall
 ```
 
-## test.py
+## test_measurements.py
 
 This test is automated, and it tests the following methods (along with constructor and `configure()`):
 
@@ -37,7 +37,7 @@ This test is automated, and it tests the following methods (along with construct
 Run the test like this:
 
 ```console
-.venv/bin/python tests/test.py
+.venv/bin/python tests/test_measurements.py
 ```
 
 It will test the module you've just installed in your venv.
@@ -69,7 +69,7 @@ bus=2 addr=0x42 ./map.sh > stub_regmap.py
 If you want to use a live INA228 instead of the emulated one, specify bus, address, and shunt resistance in command line like this:
 
 ```console
-.venv/bin/python tests/test.py 0 0x40 0.002
+.venv/bin/python tests/test_measurements.py 0 0x40 0.002
 ```
 
 Test will perform 6 iterations (0th till 5th) with a 1-second interval.
