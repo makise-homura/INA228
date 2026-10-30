@@ -161,9 +161,9 @@ class INA228:
     def __get_shunt_conv_factor(self):
 
         if(Constants.ADCRANGE == 1):
-            conversion_factor = 312.5e-9   # Table 1 in datasheet
-        else:
             conversion_factor = 78.125e-9   # Table 1 in datasheet
+        else:
+            conversion_factor = 312.5e-9   # Table 1 in datasheet
 
         return conversion_factor
 
@@ -294,7 +294,7 @@ class INA228:
 
         raw = self.__read_register24(self.Register.VSHUNT)
 
-        vshunt = (self.__convert2comp2float(raw >> 4, 20, self.__get_shunt_conv_factor())) * 10   # Table 11 in datasheet, for *10 see Known Bugs
+        vshunt = self.__convert2comp2float(raw >> 4, 20, self.__get_shunt_conv_factor())   # Table 11 in datasheet
 
         return vshunt
 

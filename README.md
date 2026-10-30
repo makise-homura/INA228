@@ -77,10 +77,6 @@ For now, it relies on `smbus2` module (see [requirements.txt](requirements.txt))
 
 See [corresponding README](tests/README.md).
 
-## Known bugs and TODO list
-
-* Value of VSHUNT is needed to be multiplied by 10 to get correct value.
-
 ## Credits
 
 Original code by [@megalloid](https://t.me/megalloid).
