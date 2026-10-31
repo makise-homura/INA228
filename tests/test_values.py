@@ -3,40 +3,18 @@ from time import sleep
 from ina228 import INA228
 
 class values_test_suite:
-    """Perform testing of INA228 module.
-    Module to test must be installed into the venv from which test is being ran.
-    Requires INA228 with 12V supplied to V+/V-, and 364 mA fed through I+/I-.
-    Accepts no less than 5 command-line arguments. If not given, uses default
-    values, otherwise treats these arguments as parameters of a real INA228
-    to be used in testing.
-    Bus number and slave address may be given in hex, like 0xa or 0x40.
-
-    Command-line args:
-        argv[1]: Bus number where INA228 is located.
-        argv[2]: Slave address of INA228.
-        argv[3]: Shunt resistance in ohms.
-        argv[4]: Applied voltage in volts.
-        argv[5]: Applied current in amperes.
-    """
-
-    DEFAULT_BUSN = 0
-    DEFAULT_SLAVE_ADDR = 0x40
-    DEFAULT_SHUNT_OHMS = 0.002
-    DEFAULT_SET_VOLTAGE = 12.0
-    DEFAULT_SET_CURRENT = 0.364
+    """Perform testing of INA228 module."""
 
     TOLERANCE = 0.1 # 10%
     INTEGRATION_TIME = 5
     INIT_TIME = 1
 
     def __init__(self, busn, addr, shunt, voltage, current):
-        self._busn = busn
-        self._addr = addr
-        self._shunt = shunt
         self._voltage = voltage
         self._current = current
-        print(f'Configuring INA228 @ I²C{self._busn}:0x{self._addr:x}, shunt of {self._shunt} Ω; applied {self._voltage} V / {self._current} A.')
-        self.ina228 = INA228(self._busn, self._addr, self._shunt)
+        self._shunt = shunt
+        print(f'Configuring INA228 @ I²C{busn}:0x{addr:x}, shunt of {shunt} Ω; applied {self._voltage} V / {self._current} A.')
+        self.ina228 = INA228(busn, addr, shunt)
         self.ina228.configure()
         sleep(self.INIT_TIME)
 
@@ -85,32 +63,52 @@ class values_test_suite:
         print(f"Energy matches: {measured} measured, {expected} expected")
 
 
-def test_voltage(busn = values_test_suite.DEFAULT_BUSN, addr = values_test_suite.DEFAULT_SLAVE_ADDR, shunt = values_test_suite.DEFAULT_SHUNT_OHMS, voltage = values_test_suite.DEFAULT_SET_VOLTAGE, current = values_test_suite.DEFAULT_SET_CURRENT):
+def test_voltage(busn, addr, shunt, voltage, current):
     values_test_suite(busn, addr, shunt, voltage, current).test_voltage()
 
 
-def test_current(busn = values_test_suite.DEFAULT_BUSN, addr = values_test_suite.DEFAULT_SLAVE_ADDR, shunt = values_test_suite.DEFAULT_SHUNT_OHMS, voltage = values_test_suite.DEFAULT_SET_VOLTAGE, current = values_test_suite.DEFAULT_SET_CURRENT):
+def test_current(busn, addr, shunt, voltage, current):
     values_test_suite(busn, addr, shunt, voltage, current).test_current()
 
 
-def test_power(busn = values_test_suite.DEFAULT_BUSN, addr = values_test_suite.DEFAULT_SLAVE_ADDR, shunt = values_test_suite.DEFAULT_SHUNT_OHMS, voltage = values_test_suite.DEFAULT_SET_VOLTAGE, current = values_test_suite.DEFAULT_SET_CURRENT):
+def test_power(busn, addr, shunt, voltage, current):
     values_test_suite(busn, addr, shunt, voltage, current).test_power()
 
 
-def test_shunt_voltage(busn = values_test_suite.DEFAULT_BUSN, addr = values_test_suite.DEFAULT_SLAVE_ADDR, shunt = values_test_suite.DEFAULT_SHUNT_OHMS, voltage = values_test_suite.DEFAULT_SET_VOLTAGE, current = values_test_suite.DEFAULT_SET_CURRENT):
+def test_shunt_voltage(busn, addr, shunt, voltage, current):
     values_test_suite(busn, addr, shunt, voltage, current).test_shunt_voltage()
 
 
-def test_charge(busn = values_test_suite.DEFAULT_BUSN, addr = values_test_suite.DEFAULT_SLAVE_ADDR, shunt = values_test_suite.DEFAULT_SHUNT_OHMS, voltage = values_test_suite.DEFAULT_SET_VOLTAGE, current = values_test_suite.DEFAULT_SET_CURRENT):
+def test_charge(busn, addr, shunt, voltage, current):
     values_test_suite(busn, addr, shunt, voltage, current).test_charge()
 
 
-def test_energy(busn = values_test_suite.DEFAULT_BUSN, addr = values_test_suite.DEFAULT_SLAVE_ADDR, shunt = values_test_suite.DEFAULT_SHUNT_OHMS, voltage = values_test_suite.DEFAULT_SET_VOLTAGE, current = values_test_suite.DEFAULT_SET_CURRENT):
+def test_energy(busn, addr, shunt, voltage, current):
     values_test_suite(busn, addr, shunt, voltage, current).test_energy()
 
 
 if __name__ =="__main__":
+    """Module to test must be installed into the venv from which test is being ran.
+    Requires INA228 with 12V supplied to V+/V-, and 364 mA fed through I+/I-.
+    Accepts no less than 5 command-line arguments. If not given, uses default
+    values, otherwise treats these arguments as parameters of a real INA228
+    to be used in testing.
+    Bus number and slave address may be given in hex, like 0xa or 0x40.
+
+    Command-line args:
+        argv[1]: Bus number where INA228 is located.
+        argv[2]: Slave address of INA228.
+        argv[3]: Shunt resistance in ohms.
+        argv[4]: Applied voltage in volts.
+        argv[5]: Applied current in amperes.
+    """
     from sys import argv
+
+    DEFAULT_BUSN = 0
+    DEFAULT_SLAVE_ADDR = 0x40
+    DEFAULT_SHUNT_OHMS = 0.002
+    DEFAULT_SET_VOLTAGE = 12.0
+    DEFAULT_SET_CURRENT = 0.364
 
     if len(argv) > 5:
         test_voltage(int(argv[1], 0), int(argv[2], 0), float(argv[3]), float(argv[4]), float(argv[5]))
@@ -120,9 +118,9 @@ if __name__ =="__main__":
         test_charge(int(argv[1], 0), int(argv[2], 0), float(argv[3]), float(argv[4]), float(argv[5]))
         test_energy(int(argv[1], 0), int(argv[2], 0), float(argv[3]), float(argv[4]), float(argv[5]))
     else:
-        test_voltage()
-        test_current()
-        test_power()
-        test_shunt_voltage()
-        test_charge()
-        test_energy()
+        test_voltage(DEFAULT_BUSN, DEFAULT_SLAVE_ADDR, DEFAULT_SHUNT_OHMS, DEFAULT_SET_VOLTAGE, DEFAULT_SET_CURRENT)
+        test_current(DEFAULT_BUSN, DEFAULT_SLAVE_ADDR, DEFAULT_SHUNT_OHMS, DEFAULT_SET_VOLTAGE, DEFAULT_SET_CURRENT)
+        test_power(DEFAULT_BUSN, DEFAULT_SLAVE_ADDR, DEFAULT_SHUNT_OHMS, DEFAULT_SET_VOLTAGE, DEFAULT_SET_CURRENT)
+        test_shunt_voltage(DEFAULT_BUSN, DEFAULT_SLAVE_ADDR, DEFAULT_SHUNT_OHMS, DEFAULT_SET_VOLTAGE, DEFAULT_SET_CURRENT)
+        test_charge(DEFAULT_BUSN, DEFAULT_SLAVE_ADDR, DEFAULT_SHUNT_OHMS, DEFAULT_SET_VOLTAGE, DEFAULT_SET_CURRENT)
+        test_energy(DEFAULT_BUSN, DEFAULT_SLAVE_ADDR, DEFAULT_SHUNT_OHMS, DEFAULT_SET_VOLTAGE, DEFAULT_SET_CURRENT)
