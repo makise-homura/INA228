@@ -1,8 +1,8 @@
 import pytest
 
 def pytest_addoption(parser):
-    parser.addoption("--busn", default=0, help="I²C bus number of INA228", type=int)
-    parser.addoption("--addr", default=0x40, help="Slave address of INA228", type=int)
+    parser.addoption("--busn", default=0, help="I²C bus number of INA228", type=lambda x: int(x, 0))
+    parser.addoption("--addr", default=0x40, help="Slave address of INA228", type=lambda x: int(x, 0))
     parser.addoption("--shunt", default=0.002, help="Shunt resistance of INA228 in ohms", type=float)
     parser.addoption("--voltage", default=12.0, help="Voltage applied to INA228 in volts", type=float)
     parser.addoption("--current", default=0.364, help="Current through INA228 in amperes", type=float)
