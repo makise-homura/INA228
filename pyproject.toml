@@ -1,5 +1,6 @@
 [build-system]
 requires = ["setuptools==75.8.0"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "ina228"
@@ -31,7 +32,7 @@ classifiers = [
     "Programming Language :: Python :: 3.15",
     "Operating System :: OS Independent",
 ]
-license = {file = "LICENSE*"}
+license = {file = "LICENSE"}
 dynamic = ["dependencies"]
 
 [tool.setuptools.dynamic]
