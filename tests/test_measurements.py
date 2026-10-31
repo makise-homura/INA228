@@ -1,41 +1,51 @@
-def test_main():
-    """Perform testing of INA228 module.
-    Module to test must be installed into the venv from which test is being ran.
-    Accepts no less than 3 command-line arguments. If not given, uses a stub
-    regmap, otherwise treats these arguments as parameters of a real INA228
-    to be used in testing.
-    Bus number and slave address may be given in hex, like 0xa or 0x40.
-    Performs 5 iterations with 1 second delay before each one on a live INA228,
-    or 10 iterations with 0.1 second delay in case of regmap is being used.
+"""Perform testing of INA228 module by running some measurements and displaying the result.
+Module to test must be installed into the venv from which test is being ran.
+Performs 5 iterations with 1 second delay before each one on a live INA228,
+or 10 iterations with 0.1 second delay in case of `--stub` is supplied.
+
+Args:
+    None.
+
+options:
+  -h, --help         show this help message and exit
+  --busn BUSN        I²C bus number of INA228 (may be given in hex)
+  --addr ADDR        Slave address of INA228 (may be given in hex)
+  --shunt SHUNT      Shunt resistance of INA228 in ohms
+  --stub             Run with stub regmap instead of live INA228
+
+Returns:
+    Nothing.
+"""
+
+def test_main(busn, addr, shunt, stub):
+    """Perform testing of INA228 module by running some measurements and displaying the result.
 
     Args:
-        None.
-
-    Command-line args:
-        argv[1]: Bus number where INA228 is located.
-        argv[2]: Slave address of INA228.
-        argv[3]: Shunt resistance in Ohms.
+        busn: I²C bus number of INA228
+        addr: Slave address of INA228
+        shunt: Shunt resistance of INA228 in ohms
+        stub: True to run with stub regmap instead of live INA228, otherwise False
 
     Returns:
         Nothing.
     """
-    from sys import argv
     from time import sleep
     from ina228 import INA228, Alert
     from datetime import datetime, UTC
 
     from stub_regmap import stub_regmap
 
-    if len(argv) > 3:
-        print(f'Running on live INA228 @ I²C{argv[1]}:{argv[2]}, shunt of {argv[3]} Ω.')
-        ina228 = INA228(int(argv[1], 0), int(argv[2], 0), float(argv[3]))
-        iterations = 5
-        sleep_sec = 1
-    else:
+
+    if stub:
         print('Running on stub regmap.')
-        ina228 = INA228(stub_regmap=stub_regmap, shunt_ohms = 0.002)
+        ina228 = INA228(stub_regmap=stub_regmap, shunt_ohms = shunt)
         iterations = 10
         sleep_sec = 0.1
+    else:
+        print(f'Running on live INA228 @ I²C{busn}:0x{addr:x}, shunt of {shunt} Ω.')
+        ina228 = INA228(busn, addr, shunt)
+        iterations = 5
+        sleep_sec = 1
 
     ina228.configure()
     ina228.set_alert_bits(Alert.ALATCH)
@@ -71,4 +81,12 @@ def test_main():
             break
 
 if __name__ =="__main__":
-    test_main()
+    import argparse
+    from conftest import cmdline_args
+    del cmdline_args['voltage']
+    del cmdline_args['current']
+    parser = argparse.ArgumentParser(description=test_main.__doc__.splitlines()[0])
+    for arg in cmdline_args:
+        parser.add_argument('--' + arg, **cmdline_args[arg])
+    args = parser.parse_args()
+    test_main(args.busn, args.addr, args.shunt, args.stub)

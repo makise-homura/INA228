@@ -1,3 +1,19 @@
+"""Perform testing of INA228 module by running value assertions on live INA228.
+
+Module to test must be installed into the venv from which test is being ran.
+Requires INA228 with a certain voltage supplied to V+/V-,
+and a certain current fed through I+/I-.
+Default values are given in `conftest.py`.
+
+options:
+  -h, --help         show this help message and exit
+  --busn BUSN        I²C bus number of INA228 (may be given in hex)
+  --addr ADDR        Slave address of INA228 (may be given in hex)
+  --shunt SHUNT      Shunt resistance of INA228 in ohms
+  --voltage VOLTAGE  Voltage applied to INA228 in volts
+  --current CURRENT  Current through INA228 in amperes
+"""
+
 from math import isclose
 from time import sleep
 from ina228 import INA228
@@ -41,38 +57,19 @@ class values_test_suite:
 
 import pytest
 
+@pytest.mark.skipif('config.getoption("stub")', reason='not supported with stub regmap')
 @pytest.mark.parametrize('func', values_test_suite.func_names)
 def test_function(func, busn, addr, shunt, voltage, current):
     getattr(values_test_suite(busn, addr, shunt, voltage, current), func)()
 
 if __name__ =="__main__":
-    """Module to test must be installed into the venv from which test is being ran.
-    Requires INA228 with 12V supplied to V+/V-, and 364 mA fed through I+/I-.
-    Accepts no less than 5 command-line arguments. If not given, uses default
-    values, otherwise treats these arguments as parameters of a real INA228
-    to be used in testing.
-    Bus number and slave address may be given in hex, like 0xa or 0x40.
-
-    Command-line args:
-        argv[1]: Bus number where INA228 is located.
-        argv[2]: Slave address of INA228.
-        argv[3]: Shunt resistance in ohms.
-        argv[4]: Applied voltage in volts.
-        argv[5]: Applied current in amperes.
-    """
-
-    DEFAULT_BUSN = 0
-    DEFAULT_SLAVE_ADDR = 0x40
-    DEFAULT_SHUNT_OHMS = 0.002
-    DEFAULT_SET_VOLTAGE = 12.0
-    DEFAULT_SET_CURRENT = 0.364
-
-    from sys import argv
-    busn = int(argv[1], 0) if len(argv) > 5 else DEFAULT_BUSN
-    addr = int(argv[2], 0) if len(argv) > 5 else DEFAULT_SLAVE_ADDR
-    shunt = float(argv[3]) if len(argv) > 5 else DEFAULT_SHUNT_OHMS
-    voltage = float(argv[4]) if len(argv) > 5 else DEFAULT_SET_VOLTAGE
-    current = float(argv[5]) if len(argv) > 5 else DEFAULT_SET_CURRENT
+    import argparse
+    from conftest import cmdline_args
+    del cmdline_args['stub']
+    parser = argparse.ArgumentParser(description=values_test_suite.__doc__)
+    for arg in cmdline_args:
+        parser.add_argument('--' + arg, **cmdline_args[arg])
+    args = parser.parse_args()
 
     for func in values_test_suite.func_names:
-        test_function(func, busn, addr, shunt, voltage, current)
+        test_function(func, args.busn, args.addr, args.shunt, args.voltage, args.current)
