@@ -18,7 +18,9 @@ Install the module you've built there:
 .venv/bin/pip install dist/ina228-*.whl --force-reinstall
 ```
 
-## test_measurements.py
+## Test suites
+
+### test_measurements.py
 
 This test is automated, and it tests the following methods (along with constructor and `configure()`):
 
@@ -32,47 +34,19 @@ This test is automated, and it tests the following methods (along with construct
 * `get_manufacturer_id()`: Read manufacturer ID.
 * `get_deviceid()`: Read device ID.
 
-### Manual run
-
-Run the test like this:
-
-```console
-.venv/bin/python tests/test_measurements.py
-```
-
-It will test the module you've just installed in your venv.
-
 #### Test behavior
 
-By default, test will perform 11 iterations (0th till 10th) with a 0.1-second interval on an emulated INA228 (not the real one even if it exists).
+Test will perform (in the case of real INA228, see below) 6 iterations (0th till 5th) with a 1-second interval.
 Each iteration will read out VBUS voltage, current, power, shunt voltage, die temp, energy, and charge using INA228 module,
 and print them out along with iteration number and current time.
 If it has not thrown an exception, it always ends successfully.
 
-#### INA228 emulation
-
-Emulation will use supplied `stub_regmap.py` by default.
-It is a dump of registers once captured on the live INA228, and used by the test so it will not depend on hardware.
-
-If you want your own stub regmap, generate it by running `./map.sh > stub_regmap.py` on the system with live INA228.
-Don't forget to install `i2cget` with something like `apt install i2c-tools` prior to running this.
-
-By default, `map.sh` expects to find INA228 on bus 0, address 0x40.
-You may specify different bus number and/or slave address with environment variables, like this:
+By default, test will use INA228 at bus 0, address 0x40, and shunt resistance 0.002 Ohms.
+If you have different values, specify bus, address, and/or shunt resistance in command line like this:
 
 ```console
-bus=2 addr=0x42 ./map.sh > stub_regmap.py
+.venv/bin/python tests/test_measurements.py --busn 0 --addr 0x40 --shunt 0.002
 ```
-
-#### Testing on a live INA228
-
-If you want to use a live INA228 instead of the emulated one, specify bus, address, and shunt resistance in command line like this:
-
-```console
-.venv/bin/python tests/test_measurements.py 0 0x40 0.002
-```
-
-Test will perform 6 iterations (0th till 5th) with a 1-second interval.
 
 When testing the real INA228, it is advised to build a test setup by supplying a constant voltage *V* through a resistor of *R*.
 Make sure that your shunt resistance *r* is set correctly when test is invoked, and check you room temperature *T*.
@@ -90,11 +64,89 @@ These methods are considered being correctly implemented, if the test displays t
 * `get_manufacturer_id()`: `Manufacturer` is somewhat reasonable for INA228 (e.g. `TI`).
 * `get_deviceid()`: `Device ID` and `Revision` is somewhat reasonable for INA228 (e.g.`0x228` and `0x1` correspondingly).
 
-Here, "equal" means approximate euqality. Let measurements have a 5..10% disagreement.
+Here, "equal" means approximate equality. Let measurements have a 5..10% disagreement.
 
-### Automated run
+#### INA228 emulation
 
-#### pytest
+To use emulated INA228, specify `--stub` when invoking test.
+In this case, it will perform 11 iterations (0th till 10th) with a 0.1-second interval.
+
+Emulation will use supplied `stub_regmap.py` by default.
+It is a dump of registers once captured on the live INA228, and used by the test so it will not depend on hardware.
+
+If you want your own stub regmap, generate it by running `./map.sh > stub_regmap.py` on the system with live INA228.
+Don't forget to install `i2cget` with something like `apt install i2c-tools` prior to running this.
+
+By default, `map.sh` expects to find INA228 on bus 0, address 0x40.
+You may specify different bus number and/or slave address with environment variables, like this:
+
+```console
+bus=2 addr=0x42 ./map.sh > stub_regmap.py
+```
+
+### test_values.py
+
+This test does require actual INA228, and it tests the following methods (along with constructor and `configure()`):
+
+* `get_shunt_voltage()`: Read voltage on the shunt resistor.
+* `get_vbus_voltage()`: Read voltage on the V+/V- terminals.
+* `get_current()`: Read current through I+/I- terminals.
+* `get_power()`: Read calculated power (a product of voltage and current).
+* `get_energy()`: Read integral energy (a product of power and time since last reset).
+* `get_charge()`: Read charge spent (a product of current and time since last reset).
+
+#### Test behavior
+
+Test will read out one by one:
+* VBUS voltage,
+* current,
+* power,
+* shunt voltage,
+* energy after 5-second pause,
+* and charge after another 5-second pause.
+Then, it will compare these values with calculated ones.
+If they does not match, test will fail an assertion.
+
+For measurements to match, current and voltage applied to INA228 must be known to the test.
+By default, it's 12.0V and 0.364A.
+If you have different setup, specify your values like that (in volts and amperes, respectively):
+
+```console
+.venv/bin/python tests/test_measurements.py --voltage 5.1 --current 0.51
+```
+
+By default, test will use INA228 at bus 0, address 0x40, and shunt resistance 0.002 Ohms.
+If you have different values, specify bus, address, and/or shunt resistance in command line like this:
+
+```console
+.venv/bin/python tests/test_measurements.py --busn 0 --addr 0x40 --shunt 0.002
+```
+
+Of course, you may pass any combination of the arguments above to the test.
+
+*Note 1*: test does not support `--stub`, and skipped while ran by pytest or tox with `--stub`.
+
+*Note 2*: Before each read INA228 will be reinitailized and let settle for 1 second.
+It is required due to integral measurements that is accumulated since that reset.
+These measurements have an additional delay of 5 seconds for value to accumulate.
+
+Approximate equality tolerance for this test is assumed to be 10%.
+
+## Manual run
+
+Run the test you want like this:
+
+```console
+.venv/bin/python tests/test_measurements.py
+```
+
+It will test the module you've just installed in your venv.
+
+Use `--help` to see allowed arguments, or pass arguments that you want when invoking.
+
+## Automated run
+
+### pytest
 
 If you want to use pytest, install it into venv:
 
@@ -110,7 +162,9 @@ And then run:
 
 It will also test the module installed into your venv.
 
-#### tox
+You may pass `--busn`, `--addr`, `--shunt`, `--stub`, `--voltage`, `--current` to pytest.
+
+### tox
 
 Install tox (somehow like `apt install tox`) and all Python versions you're up to test the project with.
 For now, tox can test the project with Python versions 3.7, 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14, and 3.15.
@@ -123,3 +177,9 @@ tox
 
 It will automatically build the package for each of the environments,
 so you may skip all preparation steps, including building the package.
+
+To pass arguments to pytest, specify them after `--`:
+
+```console
+tox -- --busn 1 --addr 0x40
+```
