@@ -18,49 +18,22 @@ class values_test_suite:
         self.ina228.configure()
         sleep(self.INIT_TIME)
 
+    def __create_test_func(self, name, measure_func, expect_func, pause = False):
+        def func(self):
+            if pause:
+                sleep(self.INTEGRATION_TIME - self.INIT_TIME)
+            measured = measure_func()
+            expected = expect_func()
+            assert isclose(measured, expected, rel_tol=self.TOLERANCE), f"{name} doesn't match: {measured} measured, {expected} expected"
+            print(f"{name} matches: {measured} measured, {expected} expected")
+        return func
 
-    def test_voltage(self):
-        measured = self.ina228.get_vbus_voltage()
-        expected = self._voltage
-        assert isclose(measured, expected, rel_tol=self.TOLERANCE), f"Voltage doesn't match: {measured} measured, {expected} expected"
-        print(f"Voltage matches: {measured} measured, {expected} expected")
-
-
-    def test_current(self):
-        measured = self.ina228.get_current()
-        expected = self._current
-        assert isclose(measured, expected, rel_tol=self.TOLERANCE), f"Current doesn't match: {measured} measured, {expected} expected"
-        print(f"Current matches: {measured} measured, {expected} expected")
-
-
-    def test_power(self):
-        measured = self.ina228.get_power()
-        expected = self._current * self._voltage
-        assert isclose(measured, expected, rel_tol=self.TOLERANCE), f"Power doesn't match: {measured} measured, {expected} expected"
-        print(f"Power matches: {measured} measured, {expected} expected")
-
-
-    def test_shunt_voltage(self):
-        measured = self.ina228.get_shunt_voltage()
-        expected = self._current * self._shunt
-        assert isclose(measured, expected, rel_tol=self.TOLERANCE), f"Shunt voltage doesn't match: {measured} measured, {expected} expected"
-        print(f"Shunt voltage matches: {measured} measured, {expected} expected")
-
-
-    def test_charge(self):
-        sleep(self.INTEGRATION_TIME - self.INIT_TIME)
-        measured = self.ina228.get_charge()
-        expected = self._current * self.INTEGRATION_TIME
-        assert isclose(measured, expected, rel_tol=self.TOLERANCE), f"Charge doesn't match: {measured} measured, {expected} expected"
-        print(f"Charge matches: {measured} measured, {expected} expected")
-
-
-    def test_energy(self):
-        sleep(self.INTEGRATION_TIME - self.INIT_TIME)
-        measured = self.ina228.get_energy()
-        expected = self._current * self._voltage * self.INTEGRATION_TIME
-        assert isclose(measured, expected, rel_tol=self.TOLERANCE), f"Energy doesn't match: {measured} measured, {expected} expected"
-        print(f"Energy matches: {measured} measured, {expected} expected")
+    test_voltage = self.__create_test_func("Voltage", self.ina228.get_vbus_voltage, lambda: self._voltage)
+    test_current = self.__create_test_func("Current", self.ina228.get_current, lambda: self._current)
+    test_power = self.__create_test_func("Power", self.ina228.get_power, lambda: self._current * self._voltage)
+    test_shunt_voltage = self.__create_test_func("Shunt voltage", self.ina228.get_shunt_voltage, lambda: self._current * self._shunt)
+    test_charge = self.__create_test_func("Charge", self.ina228.get_charge, lambda: self._current * self.INTEGRATION_TIME, pause = True)
+    test_energy = self.__create_test_func("Energy", self.ina228.get_energy, lambda: self._current * self._voltage * self.INTEGRATION_TIME, pause = True)
 
 
 def test_voltage(busn, addr, shunt, voltage, current):
