@@ -9,17 +9,10 @@ class values_test_suite:
     INTEGRATION_TIME = 5
     INIT_TIME = 1
 
-    def __init__(self, busn, addr, shunt, voltage, current):
-        self._voltage = voltage
-        self._current = current
-        self._shunt = shunt
-        print(f'Configuring INA228 @ I²C{busn}:0x{addr:x}, shunt of {shunt} Ω; applied {self._voltage} V / {self._current} A.')
-        self.ina228 = INA228(busn, addr, shunt)
-        self.ina228.configure()
-        sleep(self.INIT_TIME)
+    func_names = ['test_voltage', 'test_current', 'test_power', 'test_shunt_voltage', 'test_charge', 'test_energy']
 
     def __create_test_func(self, name, measure_func, expect_func, pause = False):
-        def func(self):
+        def func():
             if pause:
                 sleep(self.INTEGRATION_TIME - self.INIT_TIME)
             measured = measure_func()
@@ -28,37 +21,29 @@ class values_test_suite:
             print(f"{name} matches: {measured} measured, {expected} expected")
         return func
 
-    test_voltage = self.__create_test_func("Voltage", self.ina228.get_vbus_voltage, lambda: self._voltage)
-    test_current = self.__create_test_func("Current", self.ina228.get_current, lambda: self._current)
-    test_power = self.__create_test_func("Power", self.ina228.get_power, lambda: self._current * self._voltage)
-    test_shunt_voltage = self.__create_test_func("Shunt voltage", self.ina228.get_shunt_voltage, lambda: self._current * self._shunt)
-    test_charge = self.__create_test_func("Charge", self.ina228.get_charge, lambda: self._current * self.INTEGRATION_TIME, pause = True)
-    test_energy = self.__create_test_func("Energy", self.ina228.get_energy, lambda: self._current * self._voltage * self.INTEGRATION_TIME, pause = True)
+    def generate_test_methods(self):
+        self.test_voltage = self.__create_test_func("Voltage", self.ina228.get_vbus_voltage, lambda: self._voltage)
+        self.test_current = self.__create_test_func("Current", self.ina228.get_current, lambda: self._current)
+        self.test_power = self.__create_test_func("Power", self.ina228.get_power, lambda: self._current * self._voltage)
+        self.test_shunt_voltage = self.__create_test_func("Shunt voltage", self.ina228.get_shunt_voltage, lambda: self._current * self._shunt)
+        self.test_charge = self.__create_test_func("Charge", self.ina228.get_charge, lambda: self._current * self.INTEGRATION_TIME, pause = True)
+        self.test_energy = self.__create_test_func("Energy", self.ina228.get_energy, lambda: self._current * self._voltage * self.INTEGRATION_TIME, pause = True)
 
+    def __init__(self, busn, addr, shunt, voltage, current):
+        self._voltage = voltage
+        self._current = current
+        self._shunt = shunt
+        print(f'Configuring INA228 @ I²C{busn}:0x{addr:x}, shunt of {shunt} Ω; applied {self._voltage} V / {self._current} A.')
+        self.ina228 = INA228(busn, addr, shunt)
+        self.generate_test_methods()
+        self.ina228.configure()
+        sleep(self.INIT_TIME)
 
-def test_voltage(busn, addr, shunt, voltage, current):
-    values_test_suite(busn, addr, shunt, voltage, current).test_voltage()
+import pytest
 
-
-def test_current(busn, addr, shunt, voltage, current):
-    values_test_suite(busn, addr, shunt, voltage, current).test_current()
-
-
-def test_power(busn, addr, shunt, voltage, current):
-    values_test_suite(busn, addr, shunt, voltage, current).test_power()
-
-
-def test_shunt_voltage(busn, addr, shunt, voltage, current):
-    values_test_suite(busn, addr, shunt, voltage, current).test_shunt_voltage()
-
-
-def test_charge(busn, addr, shunt, voltage, current):
-    values_test_suite(busn, addr, shunt, voltage, current).test_charge()
-
-
-def test_energy(busn, addr, shunt, voltage, current):
-    values_test_suite(busn, addr, shunt, voltage, current).test_energy()
-
+@pytest.mark.parametrize('func', values_test_suite.func_names)
+def test_function(func, busn, addr, shunt, voltage, current):
+    getattr(values_test_suite(busn, addr, shunt, voltage, current), func)()
 
 if __name__ =="__main__":
     """Module to test must be installed into the venv from which test is being ran.
@@ -75,7 +60,6 @@ if __name__ =="__main__":
         argv[4]: Applied voltage in volts.
         argv[5]: Applied current in amperes.
     """
-    from sys import argv
 
     DEFAULT_BUSN = 0
     DEFAULT_SLAVE_ADDR = 0x40
@@ -83,17 +67,12 @@ if __name__ =="__main__":
     DEFAULT_SET_VOLTAGE = 12.0
     DEFAULT_SET_CURRENT = 0.364
 
-    if len(argv) > 5:
-        test_voltage(int(argv[1], 0), int(argv[2], 0), float(argv[3]), float(argv[4]), float(argv[5]))
-        test_current(int(argv[1], 0), int(argv[2], 0), float(argv[3]), float(argv[4]), float(argv[5]))
-        test_power(int(argv[1], 0), int(argv[2], 0), float(argv[3]), float(argv[4]), float(argv[5]))
-        test_shunt_voltage(int(argv[1], 0), int(argv[2], 0), float(argv[3]), float(argv[4]), float(argv[5]))
-        test_charge(int(argv[1], 0), int(argv[2], 0), float(argv[3]), float(argv[4]), float(argv[5]))
-        test_energy(int(argv[1], 0), int(argv[2], 0), float(argv[3]), float(argv[4]), float(argv[5]))
-    else:
-        test_voltage(DEFAULT_BUSN, DEFAULT_SLAVE_ADDR, DEFAULT_SHUNT_OHMS, DEFAULT_SET_VOLTAGE, DEFAULT_SET_CURRENT)
-        test_current(DEFAULT_BUSN, DEFAULT_SLAVE_ADDR, DEFAULT_SHUNT_OHMS, DEFAULT_SET_VOLTAGE, DEFAULT_SET_CURRENT)
-        test_power(DEFAULT_BUSN, DEFAULT_SLAVE_ADDR, DEFAULT_SHUNT_OHMS, DEFAULT_SET_VOLTAGE, DEFAULT_SET_CURRENT)
-        test_shunt_voltage(DEFAULT_BUSN, DEFAULT_SLAVE_ADDR, DEFAULT_SHUNT_OHMS, DEFAULT_SET_VOLTAGE, DEFAULT_SET_CURRENT)
-        test_charge(DEFAULT_BUSN, DEFAULT_SLAVE_ADDR, DEFAULT_SHUNT_OHMS, DEFAULT_SET_VOLTAGE, DEFAULT_SET_CURRENT)
-        test_energy(DEFAULT_BUSN, DEFAULT_SLAVE_ADDR, DEFAULT_SHUNT_OHMS, DEFAULT_SET_VOLTAGE, DEFAULT_SET_CURRENT)
+    from sys import argv
+    busn = int(argv[1], 0) if len(argv) > 5 else DEFAULT_BUSN
+    addr = int(argv[2], 0) if len(argv) > 5 else DEFAULT_SLAVE_ADDR
+    shunt = float(argv[3]) if len(argv) > 5 else DEFAULT_SHUNT_OHMS
+    voltage = float(argv[4]) if len(argv) > 5 else DEFAULT_SET_VOLTAGE
+    current = float(argv[5]) if len(argv) > 5 else DEFAULT_SET_CURRENT
+
+    for func in values_test_suite.func_names:
+        test_function(func, busn, addr, shunt, voltage, current)
