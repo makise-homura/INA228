@@ -5,7 +5,7 @@ Requires INA228 with a certain voltage supplied to V+/V-,
 and a certain current fed through I+/I-.
 Default values are given in `conftest.py`.
 
-options:
+Options:
   -h, --help         show this help message and exit
   --busn BUSN        I²C bus number of INA228 (may be given in hex)
   --addr ADDR        Slave address of INA228 (may be given in hex)

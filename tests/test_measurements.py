@@ -1,20 +1,15 @@
 """Perform testing of INA228 module by running some measurements and displaying the result.
+
 Module to test must be installed into the venv from which test is being ran.
 Performs 5 iterations with 1 second delay before each one on a live INA228,
 or 10 iterations with 0.1 second delay in case of `--stub` is supplied.
 
-Args:
-    None.
-
-options:
+Options:
   -h, --help         show this help message and exit
   --busn BUSN        I²C bus number of INA228 (may be given in hex)
   --addr ADDR        Slave address of INA228 (may be given in hex)
   --shunt SHUNT      Shunt resistance of INA228 in ohms
   --stub             Run with stub regmap instead of live INA228
-
-Returns:
-    Nothing.
 """
 
 def test_main(busn, addr, shunt, stub):
