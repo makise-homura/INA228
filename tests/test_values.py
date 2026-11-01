@@ -33,8 +33,8 @@ class values_test_suite:
                 sleep(self.INTEGRATION_TIME - self.INIT_TIME)
             measured = measure_func()
             expected = expect_func()
-            assert isclose(measured, expected, rel_tol=self.TOLERANCE), f"{name} doesn't match: {measured:.3f} measured, {expected:.3f} expected"
-            print(f"{name} matches: {measured:.3f} measured, {expected:.3f} expected")
+            assert isclose(measured, expected, rel_tol=self.TOLERANCE), f"{name} doesn't match: {measured:.6f} measured, {expected:.6f} expected"
+            print(f"{name} matches: {measured:.6f} measured, {expected:.6f} expected")
         return func
 
     def generate_test_methods(self):
