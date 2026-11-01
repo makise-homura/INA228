@@ -461,7 +461,7 @@ class INA228:
         for alert in args:
             data |= (1 << alert.value)
 
-        self.__write_register16(self.Register.BOVL, data)
+        self.__write_register16(self.Register.DIAG_ALRT, data)
 
 
     def set_shunt_overvoltage(self, value):
