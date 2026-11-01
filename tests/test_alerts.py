@@ -20,7 +20,7 @@ class alerts_test_suite:
 
     THRESHOLD = 0.2 # 20%
 
-    func_names = ['test_CNVRF', 'test_BUSUL', 'test_BUSOL', 'test_SHNTUL', 'test_shunt_SHNTOL', 'test_TMPOL', 'test_POL']
+    func_names = ['test_CNVRF', 'test_BUSUL', 'test_BUSOL', 'test_SHNTUL', 'test_SHNTOL', 'test_TMPOL', 'test_POL']
 
     def __create_test_func(self, alert, measure_func, set_func, is_over):
         def func():
@@ -30,7 +30,7 @@ class alerts_test_suite:
             measured = measure_func()
             lesser = measured * (1 - self.THRESHOLD)
             greater = measured * (1 + self.THRESHOLD)
-            print(f'- Current value is {measured:.3f}, will use {lesser:.3f} as lesser value and {greater:.3f} as greater one.')
+            print(f'- Current value is {measured:.6f}, will use {lesser:.6f} as lesser value and {greater:.6f} as greater one.')
 
             self.ina228.set_alert_bits(Alert.ALATCH)
             set_func(lesser if is_over else greater)
