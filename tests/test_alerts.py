@@ -68,7 +68,7 @@ class alerts_test_suite:
         self.test_SHNTUL = self.__create_test_func(Alert.SHNTUL, self.ina228.get_shunt_voltage, self.ina228.set_shunt_undervoltage, is_over=False)
         self.test_SHNTOL = self.__create_test_func(Alert.SHNTOL, self.ina228.get_shunt_voltage, self.ina228.set_shunt_overvoltage, is_over=True)
         self.test_TMPOL = self.__create_test_func(Alert.TMPOL, self.ina228.get_temp, self.ina228.set_temp_limit, is_over=True)
-        self.test_POL = self.__create_test_func(Alert.TMPOL, self.ina228.get_temp, self.ina228.set_power_overlimit, is_over=True)
+        self.test_POL = self.__create_test_func(Alert.POL, self.ina228.get_power, self.ina228.set_power_overlimit, is_over=True)
 
     def __init__(self, busn, addr, shunt):
         print(f'Configuring INA228 @ I²C{busn}:0x{addr:x}, shunt of {shunt} Ω.')
