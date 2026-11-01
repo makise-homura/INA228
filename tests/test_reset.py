@@ -27,7 +27,7 @@ def test_reset(busn, addr, shunt, voltage, current):
     INTEGRATION_TIME_1 = 3
     INTEGRATION_TIME_2 = 5
 
-    print(f'Configuring INA228 @ I²C{busn}:0x{addr:x}, shunt of {shunt} Ω; applied {voltage} V / {current} A.')
+    print(f'Configuring INA228 @ I²C{busn}:0x{addr:x}, shunt of {shunt} Ω; applied {voltage:.3f} V / {current:.3f} A.')
     ina228 = INA228(busn, addr, shunt)
     ina228.configure()
 
@@ -38,9 +38,9 @@ def test_reset(busn, addr, shunt, voltage, current):
         measured_w = ina228.get_energy()
         expected_q = current * t
         expected_w = current * voltage * t
-        assert isclose(measured_q, expected_q, rel_tol=TOLERANCE), f"Charge doesn't match: {measured_q} measured, {expected_q} expected"
-        assert isclose(measured_w, expected_w, rel_tol=TOLERANCE), f"Energy doesn't match: {measured_w} measured, {expected_w} expected"
-        print(f"Measurements match estimations successfully: Q is {measured_q}≈{expected_q}, W is {measured_w}≈{expected_w}.")
+        assert isclose(measured_q, expected_q, rel_tol=TOLERANCE), f"Charge doesn't match: {measured_q:.3f} measured, {expected_q:.3f} expected"
+        assert isclose(measured_w, expected_w, rel_tol=TOLERANCE), f"Energy doesn't match: {measured_w:.3f} measured, {expected_w:.3f} expected"
+        print(f"Measurements match estimations successfully: Q is {measured_q:.3f}≈{expected_q:.3f}, W is {measured_w:.3f}≈{expected_w:.3f}.")
         print('Resetting Q and W.')
         ina228.reset_energy()
 

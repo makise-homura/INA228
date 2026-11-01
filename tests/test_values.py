@@ -33,8 +33,8 @@ class values_test_suite:
                 sleep(self.INTEGRATION_TIME - self.INIT_TIME)
             measured = measure_func()
             expected = expect_func()
-            assert isclose(measured, expected, rel_tol=self.TOLERANCE), f"{name} doesn't match: {measured} measured, {expected} expected"
-            print(f"{name} matches: {measured} measured, {expected} expected")
+            assert isclose(measured, expected, rel_tol=self.TOLERANCE), f"{name} doesn't match: {measured:.3f} measured, {expected:.3f} expected"
+            print(f"{name} matches: {measured:.3f} measured, {expected:.3f} expected")
         return func
 
     def generate_test_methods(self):
@@ -49,7 +49,7 @@ class values_test_suite:
         self._voltage = voltage
         self._current = current
         self._shunt = shunt
-        print(f'Configuring INA228 @ I²C{busn}:0x{addr:x}, shunt of {shunt} Ω; applied {self._voltage} V / {self._current} A.')
+        print(f'Configuring INA228 @ I²C{busn}:0x{addr:x}, shunt of {shunt} Ω; applied {self._voltage:.3f} V / {self._current:.3f} A.')
         self.ina228 = INA228(busn, addr, shunt)
         self.generate_test_methods()
         self.ina228.configure()
