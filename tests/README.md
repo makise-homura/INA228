@@ -169,6 +169,71 @@ Of course, you may pass any combination of the arguments above to the test.
 
 Approximate equality tolerance for this test is assumed to be 10%.
 
+### test_alerts.py
+
+This test does require actual INA228, and it tests the following methods (along with constructor and `configure()`):
+* `get_diag_alerts()`: Read alerts.
+* `alert_message()`: Get text message for specific alert.
+* `set_alert_bits()`: Set alert configuration.
+* `set_shunt_overvoltage()`: Set high alert threshold of the shunt resistor voltage.
+* `set_shunt_undervoltage()`: Set low alert threshold of the shunt resistor voltage.
+* `set_bus_overvoltage()`: Set high alert threshold of the V+/V- terminals voltage.
+* `set_bus_undervoltage()`: Set low alert threshold of the V+/V- terminals voltage.
+* `set_temp_limit()`: Set high alert threshold of the die temperature.
+* `set_power_overlimit()`: Set high alert threshold of the load power.
+
+It tests these alerts:
+* `Alert.CNVRF`: Conversion is completed.
+* `Alert.BUSUL`: Bus voltage measurement falls below the threshold limit in the bus under-limit register.
+* `Alert.BUSOL`: Bus voltage measurement exceeds the threshold limit in the bus over-limit register.
+* `Alert.SHNTUL`: Shunt voltage measurement falls below the threshold limit in the shunt under-limit register.
+* `Alert.SHNTOL`: Shunt voltage measurement exceeds the threshold limit in the shunt over-limit register.
+* `Alert.TMPOL`: Temperature measurement exceeds the threshold limit in the temperature over-limit register.
+* `Alert.POL`: Power measurement exceeds the threshold limit in the power over-limit register.
+
+These alerts may not be tested in live environment, so no test (including this) can test it:
+* `Alert.MEMSTAT`: Checksum error is detected in the device trim memory space.
+* `Alert.MATHOF`: Arithmetic operation resulted in an overflow error.
+* `Alert.CHARGEOF`: 40 bit CHARGE register has overflowed.
+* `Alert.ENERGYOF`: 40 bit ENERGY register has overflowed.
+
+Test these alert control bits:
+* `Alert.ALATCH`: Alert Latch Enable. When set to 0 (Transparent mode), the alert flag (and pin) resets when the fault has been cleared. When set to 1 (Latch mode), the alert flag (and pin) remain active following a fault until the `get_diag_alerts()` called. Default: 0.
+
+These alert control bits may not be tested in live environment, so no test (including this) can test it:
+* `Alert.APOL`: Alert Polarity bit. Sets the Alert pin polarity. 0h = Normal (Active-low open-drain), 1h = Inverted (active-high). Default: 0.
+* `Alert.SLOWALERT`: Generate alert on the average value. If set to 1, ALERT is asserted on the completed averaged value, otherwise on non-averaged (ADC) value. Default: 0.
+* `Alert.CNVR`: Conversion ready. If set to 1, the Alert pin to be asserted on Alert.CNVRF. Default: 0.
+
+#### Test behavior
+
+Test will test `Alert.CNVRF` by checking it immediately after reset,  :
+* VBUS voltage,
+* current,
+* power,
+* shunt voltage,
+* energy after 5-second pause,
+* and charge after another 5-second pause.
+Then, it will compare these values with calculated ones.
+If they does not match, test will fail an assertion.
+
+Approximate threshold tolerance for this test is assumed to be 20%. So it sets 80% of measured value to test .
+
+For alerts to work correctly, some non-zero current and voltage must be applied to INA228 before to the test,
+and it must be presented to positive temperature noticeably above 0°C.
+Consider at least 2V, 0.1A and 10°C as minimum values, but higher (not exceeding AMR of INA228) is better.
+
+By default, test will use INA228 at bus 0, address 0x40, and shunt resistance 0.002 Ohms.
+If you have different values, specify bus, address, and/or shunt resistance in command line like this:
+
+```console
+.venv/bin/python tests/test_measurements.py --busn 0 --addr 0x40 --shunt 0.002
+```
+
+Of course, you may pass any combination of the arguments above to the test.
+
+*Note*: test does not support `--stub`, and skipped while ran by pytest or tox with `--stub`.
+
 ## Manual run
 
 Run the test you want like this:
