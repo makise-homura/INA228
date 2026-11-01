@@ -207,17 +207,18 @@ These alert control bits may not be tested in live environment, so no test (incl
 
 #### Test behavior
 
-Test will test `Alert.CNVRF` by checking it immediately after reset,  :
-* VBUS voltage,
-* current,
-* power,
-* shunt voltage,
-* energy after 5-second pause,
-* and charge after another 5-second pause.
-Then, it will compare these values with calculated ones.
-If they does not match, test will fail an assertion.
+Test will test `Alert.CNVRF` by checking it immediately after reset, and then every one of these alerts in both latched (`Alert.ALATCH`) and unlatched mode:
+* `Alert.BUSUL`: Bus voltage measurement falls below the threshold limit in the bus under-limit register.
+* `Alert.BUSOL`: Bus voltage measurement exceeds the threshold limit in the bus over-limit register.
+* `Alert.SHNTUL`: Shunt voltage measurement falls below the threshold limit in the shunt under-limit register.
+* `Alert.SHNTOL`: Shunt voltage measurement exceeds the threshold limit in the shunt over-limit register.
+* `Alert.TMPOL`: Temperature measurement exceeds the threshold limit in the temperature over-limit register.
+* `Alert.POL`: Power measurement exceeds the threshold limit in the power over-limit register.
+If any of the alerts does not fire, latch, or disappear when they have to, test will fail an assertion.
 
-Approximate threshold tolerance for this test is assumed to be 20%. So it sets 80% of measured value to test .
+Approximate threshold tolerance for this test is assumed to be 20%.
+So, to trigger alert, it sets 80% of measured value to test value over-limit, and 120% to test value under-limit.
+To test alert being cleared, values are being set the opposite way.
 
 For alerts to work correctly, some non-zero current and voltage must be applied to INA228 before to the test,
 and it must be presented to positive temperature noticeably above 0°C.
