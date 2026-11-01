@@ -40,7 +40,7 @@ def test_reset(busn, addr, shunt, voltage, current):
         expected_w = current * voltage * t
         assert isclose(measured_q, expected_q, rel_tol=TOLERANCE), f"Charge doesn't match: {measured_q:.3f} measured, {expected_q:.3f} expected"
         assert isclose(measured_w, expected_w, rel_tol=TOLERANCE), f"Energy doesn't match: {measured_w:.3f} measured, {expected_w:.3f} expected"
-        print(f"Measurements match estimations successfully: Q is {measured_q:.3f}≈{expected_q:.3f}, W is {measured_w:.3f}≈{expected_w:.3f}.")
+        print(f"Measurements match estimations successfully: Q is {measured_q:.3f}≈{expected_q:.3f} C, W is {measured_w:.3f}≈{expected_w:.3f} J.")
         print('Resetting Q and W.')
         ina228.reset_energy()
 
