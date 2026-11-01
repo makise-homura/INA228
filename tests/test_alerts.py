@@ -19,6 +19,7 @@ class alerts_test_suite:
     """Perform testing of alert subsystem of the INA228 module."""
 
     THRESHOLD = 0.2 # 20%
+    SETTLE_TIME = 0.5 # seconds
 
     func_names = ['test_CNVRF', 'test_BUSUL', 'test_BUSOL', 'test_SHNTUL', 'test_SHNTOL', 'test_TMPOL', 'test_POL']
 
@@ -26,36 +27,36 @@ class alerts_test_suite:
         def func():
             print(f'Testing {alert.name}.')
             self.ina228.configure()
-            sleep(1)
+            sleep(self.SETTLE_TIME)
             measured = measure_func()
             lesser = measured * (1 - self.THRESHOLD)
             greater = measured * (1 + self.THRESHOLD)
             print(f'- Current value is {measured:.6f}, will use {lesser:.6f} as lesser value and {greater:.6f} as greater one.')
 
             self.ina228.set_alert_bits(Alert.ALATCH)
-            sleep(1)
+            sleep(self.SETTLE_TIME)
             set_func(lesser if is_over else greater)
-            sleep(1)
+            sleep(self.SETTLE_TIME)
             assert alert in self.ina228.get_diag_alerts(), 'Latch mode: alert not fired on condition'
             print('- Latch mode: alert fired on condition')
-            sleep(1)
+            sleep(self.SETTLE_TIME)
             set_func(greater if is_over else lesser)
-            sleep(1)
+            sleep(self.SETTLE_TIME)
             assert alert in self.ina228.get_diag_alerts(), 'Latch mode: alert not latched after condition'
             print('- Latch mode: alert latched after condition')
-            sleep(1)
+            sleep(self.SETTLE_TIME)
             assert alert not in self.ina228.get_diag_alerts(), 'Latch mode: alert not cleared after second read'
             print('- Latch mode: alert cleared after second read')
 
             self.ina228.set_alert_bits()
-            sleep(1)
+            sleep(self.SETTLE_TIME)
             set_func(lesser if is_over else greater)
-            sleep(1)
+            sleep(self.SETTLE_TIME)
             assert alert in self.ina228.get_diag_alerts(), 'Transparent mode: alert not fired on condition'
             print('- Transparent mode: alert fired on condition')
-            sleep(1)
+            sleep(self.SETTLE_TIME)
             set_func(greater if is_over else lesser)
-            sleep(1)
+            sleep(self.SETTLE_TIME)
             assert alert not in self.ina228.get_diag_alerts(), 'Transparent mode: alert not cleared after condition'
             print('- Transparent mode: alert cleared after condition')
 
@@ -80,7 +81,7 @@ class alerts_test_suite:
         self.ina228.configure()
         assert Alert.CNVRF not in self.ina228.get_diag_alerts(), 'Got alert immediately after initialization'
         print('- Did not got alert immediately after initialization')
-        sleep(1)
+        sleep(self.SETTLE_TIME)
         assert Alert.CNVRF in self.ina228.get_diag_alerts(), 'Did not get alert after 1 second'
         print('- Got alert after 1 second')
         print(f'{self.ina228.alert_message(Alert.CNVRF)} - behaves correctly.')
