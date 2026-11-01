@@ -417,7 +417,7 @@ class INA228:
             None.
 
         Returns:
-            List of Alert constants matching all active alert bits in alert register.
+            List of Alert constants matching all active bits in alert register, including the configuration bits.
         """
 
         raw = self.__read_register16(self.Register.DIAG_ALRT)
@@ -441,17 +441,22 @@ class INA228:
         """
 
         alert_strings = {
-            Alert.MEMSTAT:  'MEMSTAT: Checksum error is detected in the device trim memory space',
-            Alert.CNVRF:    'CNVRF: Conversion is completed',
-            Alert.BUSUL:    'BUSUL: Bus voltage measurement falls below the threshold limit in the bus under-limit register',
-            Alert.BUSOL:    'BUSOL: Bus voltage measurement exceeds the threshold limit in the bus over-limit register',
-            Alert.SHNTUL:   'SHNTUL: Shunt voltage measurement falls below the threshold limit in the shunt under-limit register',
-            Alert.SHNTOL:   'SHNTOL: Shunt voltage measurement exceeds the threshold limit in the shunt over-limit register',
-            Alert.TMPOL:    'TMPOL: Temperature measurement exceeds the threshold limit in the temperature over-limit register',
-            Alert.POL:      'POL: Power measurement exceeds the threshold limit in the power over-limit register',
-            Alert.MATHOF:   'MATHOF: Arithmetic operation resulted in an overflow error',
-            Alert.CHARGEOF: 'CHARGEOF: 40 bit CHARGE register has overflowed',
-            Alert.ENERGYOF: 'ENERGYOF: 40 bit ENERGY register has overflowed',
+            Alert.MEMSTAT:   'MEMSTAT: Checksum error is detected in the device trim memory space',
+            Alert.CNVRF:     'CNVRF: Conversion is completed',
+            Alert.BUSUL:     'BUSUL: Bus voltage measurement falls below the threshold limit in the bus under-limit register',
+            Alert.BUSOL:     'BUSOL: Bus voltage measurement exceeds the threshold limit in the bus over-limit register',
+            Alert.SHNTUL:    'SHNTUL: Shunt voltage measurement falls below the threshold limit in the shunt under-limit register',
+            Alert.SHNTOL:    'SHNTOL: Shunt voltage measurement exceeds the threshold limit in the shunt over-limit register',
+            Alert.TMPOL:     'TMPOL: Temperature measurement exceeds the threshold limit in the temperature over-limit register',
+            Alert.POL:       'POL: Power measurement exceeds the threshold limit in the power over-limit register',
+            Alert.MATHOF:    'MATHOF: Arithmetic operation resulted in an overflow error',
+            Alert.CHARGEOF:  'CHARGEOF: 40 bit CHARGE register has overflowed',
+            Alert.ENERGYOF:  'ENERGYOF: 40 bit ENERGY register has overflowed',
+            # Not actually alerts, but why not explain them if needed?
+            Alert.ALATCH:    'ALATCH: Alert Latch Enable. If set, fired alert remain active until read, otherwise resets when the fault has been cleared',
+            Alert.APOL:      'APOL: Alert Polarity bit. If set, alert pin is active-high, otherwise active-low open-drain',
+            Alert.SLOWALERT: 'SLOWALERT: Generate alert on the average value. If set, alert is asserted on the completed averaged value, otherwise on non-averaged (ADC) value',
+            Alert.CNVR:      'CNVR: Conversion ready. If set, the Alert pin to be asserted on Alert.CNVRF'
         }
 
         return alert_strings[alert]
