@@ -33,10 +33,12 @@ class alerts_test_suite:
             print(f'- Current value is {measured:.6f}, will use {lesser:.6f} as lesser value and {greater:.6f} as greater one.')
 
             self.ina228.set_alert_bits(Alert.ALATCH)
+            sleep(1)
             set_func(lesser if is_over else greater)
             sleep(1)
             assert alert in self.ina228.get_diag_alerts(), 'Latch mode: alert not fired on condition'
             print('- Latch mode: alert fired on condition')
+            sleep(1)
             set_func(greater if is_over else lesser)
             sleep(1)
             assert alert in self.ina228.get_diag_alerts(), 'Latch mode: alert not latched after condition'
@@ -46,10 +48,12 @@ class alerts_test_suite:
             print('- Latch mode: alert cleared after second read')
 
             self.ina228.set_alert_bits()
+            sleep(1)
             set_func(lesser if is_over else greater)
             sleep(1)
             assert alert in self.ina228.get_diag_alerts(), 'Transparent mode: alert not fired on condition'
             print('- Transparent mode: alert fired on condition')
+            sleep(1)
             set_func(greater if is_over else lesser)
             sleep(1)
             assert alert not in self.ina228.get_diag_alerts(), 'Transparent mode: alert not cleared after condition'
