@@ -439,6 +439,7 @@ class INA228:
             Alert.SHNTUL:   'SHNTUL: Shunt voltage measurement falls below the threshold limit in the shunt under-limit register',
             Alert.SHNTOL:   'SHNTOL: Shunt voltage measurement exceeds the threshold limit in the shunt over-limit register',
             Alert.TMPOL:    'TMPOL: Temperature measurement exceeds the threshold limit in the temperature over-limit register',
+            Alert.POL:      'POL: Power measurement exceeds the threshold limit in the power over-limit register',
             Alert.MATHOF:   'MATHOF: Arithmetic operation resulted in an overflow error',
             Alert.CHARGEOF: 'CHARGEOF: 40 bit CHARGE register has overflowed',
             Alert.ENERGYOF: 'ENERGYOF: 40 bit ENERGY register has overflowed',
