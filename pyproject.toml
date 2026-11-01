@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ina228"
-version = "1.0.0"
+version = "1.0.1"
 authors = [
   { name="Andrey Zaostrovnykh", email="megalloid@gmail.com" },
   { name="Igor Molchanov", email="akemi_homura@kurisa.ch" },
