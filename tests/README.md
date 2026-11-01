@@ -132,6 +132,43 @@ These measurements have an additional delay of 5 seconds for value to accumulate
 
 Approximate equality tolerance for this test is assumed to be 10%.
 
+### test_reset.py
+
+This test does require actual INA228, and it tests the `reset_energy()` method (along with constructor and `configure()`).
+
+#### Test behavior
+
+Test will do the following:
+* initialize INA228,
+* wait for specific time `INTEGRATION_TIME_1`,
+* read energy and charge, and compare them to estimations,
+* reset energy and charge counters by calling `reset_energy()`,
+* wait for specific time `INTEGRATION_TIME_2`,
+* read energy and charge again, and compare them to estimations for the new time,
+* reset energy and charge agian.
+If on each comparison measurements do not match the estimations, test will fail.
+
+For measurements to match, current and voltage applied to INA228 must be known to the test.
+By default, it's 12.0V and 0.364A.
+If you have different setup, specify your values like that (in volts and amperes, respectively):
+
+```console
+.venv/bin/python tests/test_measurements.py --voltage 5.1 --current 0.51
+```
+
+By default, test will use INA228 at bus 0, address 0x40, and shunt resistance 0.002 Ohms.
+If you have different values, specify bus, address, and/or shunt resistance in command line like this:
+
+```console
+.venv/bin/python tests/test_measurements.py --busn 0 --addr 0x40 --shunt 0.002
+```
+
+Of course, you may pass any combination of the arguments above to the test.
+
+*Note 1*: test does not support `--stub`, and skipped while ran by pytest or tox with `--stub`.
+
+Approximate equality tolerance for this test is assumed to be 10%.
+
 ## Manual run
 
 Run the test you want like this:
