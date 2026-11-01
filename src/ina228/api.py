@@ -11,8 +11,7 @@ Typical usage:
     print('Current: ', ina228.get_current())
     print('Power: ', ina228.get_power())
 
-Need to fix:
-    1) Value of VSHUNT is needed to be multiplied by 10 to get correct value.
+Datasheet references are as of revision SLYS021A of May 2022.
 """
 
 import time
@@ -149,11 +148,11 @@ class INA228:
     def __get_current_lsb(self):
 
         if(Constants.ADCRANGE == 0):
-            adc_max_voltage = 163.84e-3   # Table 1 in datasheet
+            adc_max_voltage = 163.84e-3   # Table 8-1 in datasheet
         else:
-            adc_max_voltage = 40.96e-3   # Table 1 in datasheet
+            adc_max_voltage = 40.96e-3   # Table 8-1 in datasheet
 
-        current_lsb = (adc_max_voltage / self._shunt_ohms) / 524288   # Equation (2) in datasheet
+        current_lsb = (adc_max_voltage / self._shunt_ohms) / 524288   # Equation (3) in datasheet
 
         return current_lsb
 
@@ -161,25 +160,37 @@ class INA228:
     def __get_shunt_conv_factor(self):
 
         if(Constants.ADCRANGE == 1):
-            conversion_factor = 78.125e-9   # Table 1 in datasheet
+            conversion_factor = 78.125e-9   # Table 7-9 in datasheet
         else:
-            conversion_factor = 312.5e-9   # Table 1 in datasheet
+            conversion_factor = 312.5e-9   # Table 7-9 in datasheet
+
+        return conversion_factor
+
+    def __get_shunt_alert_conv_factor(self):
+
+        if(Constants.ADCRANGE == 1):
+            conversion_factor = 1.25e-6   # Tables 7-17 and 7-18 in datasheet
+        else:
+            conversion_factor = 5.0e-6   # Tables 7-17 and 7-18 in datasheet
 
         return conversion_factor
 
     def __get_vbus_conv_factor(self):
 
-        return 195.3125e-6   # Table 1 in datasheet
+        return 195.3125e-6   # Table 7-10 in datasheet
+
+
+    def __get_vbus_alert_conv_factor(self):
+
+        return 3.125e-3   # Tables 7-19 and 7-20 in datasheet
 
 
     def __get_temp_conv_factor(self):
 
-        return 7.8125e-3   # Table 1 in datasheet
+        return 7.8125e-3   # Table 7-11 and 7-21 in datasheet
 
 
     def __set_config(self):
-
-        # Write settings to CONFIG register
 
         config = self.__read_register16(self.Register.CONFIG)
 
@@ -190,8 +201,6 @@ class INA228:
 
     def __set_adc_config(self):
 
-        # Write settings to ADC CONFIG register
-
         config = self.__read_register16(self.Register.ADC_CONFIG)
 
         config = config | (self._adc_mode << Constants.ADC_MODE_NBIT) | (self._vbus_conv_time << Constants.VBUS_CONV_TIME_NBIT ) | (self._vshct_conv_time << Constants.VSHCT_CONV_TIME_NBIT) | (self._vtct_conv_time << Constants.VTCT_CONV_TIME_NBIT) | (self._adc_avg << Constants.AVG_NBIT)
@@ -201,14 +210,14 @@ class INA228:
 
     def __shunt_calib(self):
 
-        calib_value = int(13107.2e6 * self.__get_current_lsb() * self._shunt_ohms)   # Equation (1) in datasheet
+        calib_value = int(13107.2e6 * self.__get_current_lsb() * self._shunt_ohms)   # Equation (2) in datasheet
 
         self.__write_register16(self.Register.SHUNT_CAL, calib_value)
 
 
     def __shunt_tempco(self):
 
-        self.__write_register16(self.Register.SHUNT_TEMPCO, self._tempco)
+        self.__write_register16(self.Register.SHUNT_TEMPCO, self._tempco)   # Refer to Equation (1) in datasheet to calculate tempco value.
 
 
     def __reset_all(self):
@@ -294,7 +303,7 @@ class INA228:
 
         raw = self.__read_register24(self.Register.VSHUNT)
 
-        vshunt = self.__convert2comp2float(raw >> 4, 20, self.__get_shunt_conv_factor())   # Table 11 in datasheet
+        vshunt = self.__convert2comp2float(raw >> 4, 20, self.__get_shunt_conv_factor())   # Table 7-9 in datasheet
 
         return vshunt
 
@@ -311,7 +320,7 @@ class INA228:
 
         raw = self.__read_register24(self.Register.VBUS)
 
-        vbus = self.__convert2comp2float(raw >> 4, 20, self.__get_vbus_conv_factor())   # Table 12 in datasheet
+        vbus = self.__convert2comp2float(raw >> 4, 20, self.__get_vbus_conv_factor())   # Table 7-10 in datasheet
 
         return vbus
 
@@ -328,7 +337,7 @@ class INA228:
 
         raw = self.__read_register16(self.Register.DIETEMP)
 
-        temp = self.__convert2comp2float(raw, 16, self.__get_temp_conv_factor())   # Table 13 in datasheet
+        temp = self.__convert2comp2float(raw, 16, self.__get_temp_conv_factor())   # Table 7-11 in datasheet
 
         return temp
 
@@ -345,7 +354,7 @@ class INA228:
 
         raw = self.__read_register24(self.Register.CURRENT)
 
-        current = self.__convert2comp2float(raw >> 4, 20, self.__get_current_lsb())   # Equation (3) in datasheet
+        current = self.__convert2comp2float(raw >> 4, 20, self.__get_current_lsb())   # Equation (4) in datasheet
 
         return current
 
@@ -362,7 +371,7 @@ class INA228:
 
         raw = self.__read_register24(self.Register.POWER)
 
-        power = raw * 3.2 * self.__get_current_lsb()   # Equation (4) in datasheet
+        power = raw * 3.2 * self.__get_current_lsb()   # Equation (5) in datasheet
 
         return power
 
@@ -379,7 +388,7 @@ class INA228:
 
         raw = self.__read_register40(self.Register.ENERGY)
 
-        energy = raw * 3.2 * 16 * self.__get_current_lsb()   # Equation (5) in datasheet
+        energy = raw * 16 * 3.2 * self.__get_current_lsb()   # Equation (6) in datasheet
 
         return energy
 
@@ -396,7 +405,7 @@ class INA228:
 
         raw = self.__read_register40(self.Register.CHARGE)
 
-        charge = self.__convert2comp2float(raw, 40, self.__get_current_lsb())   # Equation (6) in datasheet
+        charge = self.__convert2comp2float(raw, 40, self.__get_current_lsb())   # Equation (7) in datasheet
 
         return charge
 
@@ -475,7 +484,7 @@ class INA228:
             Nothing.
         """
 
-        data = __convertfloat22comp(value, 16, self.__get_shunt_conv_factor())   # Table 19 in datasheet
+        data = self.__convertfloat22comp(value, 16, self.__get_shunt_alert_conv_factor())   # Table 7-17 in datasheet
 
         self.__read_register16(self.Register.SOVL)
 
@@ -492,7 +501,7 @@ class INA228:
             Nothing.
         """
 
-        data = __convertfloat22comp(value, 16, self.__get_shunt_conv_factor())   # Table 20 in datasheet
+        data = self.__convertfloat22comp(value, 16, self.__get_shunt_alert_conv_factor())   # Table 7-18 in datasheet
 
         self.__read_register16(self.Register.SUVL)
 
@@ -509,7 +518,7 @@ class INA228:
             Nothing.
         """
 
-        data = value / self.__get_vbus_conv_factor()   # Table 21 in datasheet
+        data = int(value / self.__get_vbus_alert_conv_factor())   # Table 7-19 in datasheet
 
         self.__read_register16(self.Register.BOVL)
 
@@ -526,7 +535,7 @@ class INA228:
             Nothing.
         """
 
-        data = value / self.__get_vbus_conv_factor()   # Table 22 in datasheet
+        data = int(value / self.__get_vbus_alert_conv_factor())   # Table 7-20 in datasheet
 
         self.__read_register16(self.Register.BUVL)
 
@@ -543,7 +552,7 @@ class INA228:
             Nothing.
         """
 
-        data = __convertfloat22comp(value, 16, self.__get_temp_conv_factor())   # Table 23 in datasheet
+        data = self.__convertfloat22comp(value, 16, self.__get_temp_conv_factor())   # Table 7-21 in datasheet
 
         self.__read_register16(self.Register.TEMP_LIMIT)
 
@@ -560,7 +569,7 @@ class INA228:
             Nothing.
         """
 
-        data = value / (3.2 * self.__get_current_lsb())   # Equation (4) and Table 24 in datasheet
+        data = int(value / (256 * 3.2 * self.__get_current_lsb()))   # Tables 7-22 and 8-4 in datasheet
 
         self.__read_register16(self.Register.PWR_LIMIT)
 
