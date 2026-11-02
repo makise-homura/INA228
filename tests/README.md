@@ -148,13 +148,7 @@ Test will do the following:
 * reset energy and charge agian.
 If on each comparison measurements do not match the estimations, test will fail.
 
-For measurements to match, current and voltage applied to INA228 must be known to the test.
-By default, it's 12.0V and 0.364A.
-If you have different setup, specify your values like that (in volts and amperes, respectively):
-
-```console
-.venv/bin/python tests/test_measurements.py --voltage 5.1 --current 0.51
-```
+For measurements to match, current and voltage applied to INA228 is measured by the test in the beginning.
 
 By default, test will use INA228 at bus 0, address 0x40, and shunt resistance 0.002 Ohms.
 If you have different values, specify bus, address, and/or shunt resistance in command line like this:

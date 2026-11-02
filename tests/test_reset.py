@@ -1,8 +1,8 @@
 """Perform testing of INA228 module by running integrated values reset sequence on live INA228.
 
 Module to test must be installed into the venv from which test is being ran.
-Requires INA228 with a certain voltage supplied to V+/V-,
-and a certain current fed through I+/I-.
+Requires INA228 with some nonzero voltage supplied to V+/V-, and some nonzero
+current fed through I+/I-.
 Default values are given in `conftest.py`.
 
 Options:
@@ -10,8 +10,6 @@ Options:
   --busn BUSN        I²C bus number of INA228 (may be given in hex)
   --addr ADDR        Slave address of INA228 (may be given in hex)
   --shunt SHUNT      Shunt resistance of INA228 in ohms
-  --voltage VOLTAGE  Voltage applied to INA228 in volts
-  --current CURRENT  Current through INA228 in amperes
 """
 
 from math import isclose
@@ -20,15 +18,21 @@ from ina228 import INA228
 
 import pytest
 @pytest.mark.skipif('config.getoption("stub")', reason='not supported with stub regmap')
-def test_reset(busn, addr, shunt, voltage, current):
+def test_reset(busn, addr, shunt):
     """Perform testing of ability to reset of INA228 module."""
 
     TOLERANCE = 0.1 # 10%
+    INIT_TIME = 1
     INTEGRATION_TIME_1 = 3
     INTEGRATION_TIME_2 = 5
 
-    print(f'Configuring INA228 @ I²C{busn}:0x{addr:x}, shunt of {shunt} Ω; applied {voltage:.3f} V / {current:.3f} A.')
+    print(f'Configuring INA228 @ I²C{busn}:0x{addr:x}, shunt of {shunt} Ω.')
     ina228 = INA228(busn, addr, shunt)
+    ina228.configure()
+    sleep(INIT_TIME)
+    current = ina228.get_current()
+    voltage = ina228.get_vbus_voltage()
+    print(f'Detected that {voltage:.3f} V and {current:.3f} A applied.')
     ina228.configure()
 
     for t in [INTEGRATION_TIME_1, INTEGRATION_TIME_2]:
@@ -48,8 +52,10 @@ if __name__ =="__main__":
     import argparse
     from conftest import cmdline_args
     del cmdline_args['stub']
+    del cmdline_args['voltage']
+    del cmdline_args['current']
     parser = argparse.ArgumentParser(description=test_reset.__doc__)
     for arg in cmdline_args:
         parser.add_argument('--' + arg, **cmdline_args[arg])
     args = parser.parse_args()
-    test_reset(args.busn, args.addr, args.shunt, args.voltage, args.current)
+    test_reset(args.busn, args.addr, args.shunt)
